@@ -18,7 +18,7 @@
         "Create .env.example with all required environment variables",
         "Install core dependencies (ink, commander, axios, zod, yaml, dotenv)"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "infra-002",
