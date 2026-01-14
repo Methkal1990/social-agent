@@ -1,0 +1,1522 @@
+{
+  "project": "social-agent",
+  "version": "1.0.0",
+  "description": "AI-powered social media manager for X (Twitter)",
+  "features": [
+    {
+      "id": "infra-001",
+      "category": "infrastructure",
+      "description": "Project scaffolding and TypeScript setup",
+      "steps": [
+        "Initialize npm project with package.json",
+        "Configure TypeScript with tsconfig.json",
+        "Set up tsup for building",
+        "Configure ESLint and Prettier",
+        "Set up vitest for testing",
+        "Create directory structure (src/, tests/, docs/, specs/)",
+        "Add .gitignore with node_modules, .env, dist, logs, backups",
+        "Create .env.example with all required environment variables",
+        "Install core dependencies (ink, commander, axios, zod, yaml, dotenv)"
+      ],
+      "passes": false
+    },
+    {
+      "id": "infra-002",
+      "category": "infrastructure",
+      "description": "Logging system with configurable levels",
+      "steps": [
+        "Create Logger class with level configuration",
+        "Implement log levels: error, warn, info, debug, trace",
+        "Add file-based logging to logs/ directory",
+        "Implement log rotation by date",
+        "Add timestamp formatting for all entries",
+        "Create separate ai-reasoning.log for AI decisions",
+        "Add colorized console output based on level"
+      ],
+      "passes": false
+    },
+    {
+      "id": "infra-003",
+      "category": "infrastructure",
+      "description": "Error handling utilities and types",
+      "steps": [
+        "Create base AppError class with user-friendly messages",
+        "Create XAPIError class for X API errors",
+        "Create OpenRouterError class for AI errors",
+        "Create ConfigError class for configuration issues",
+        "Create NetworkError class for connectivity issues",
+        "Implement withRetry utility with exponential backoff",
+        "Implement isRetryable error classification",
+        "Add error context collection for debugging"
+      ],
+      "passes": false
+    },
+    {
+      "id": "config-001",
+      "category": "configuration",
+      "description": "Configuration loading and validation system",
+      "steps": [
+        "Create config directory structure (~/.social-agent/config/)",
+        "Implement YAML file loading with yaml package",
+        "Create Zod schemas for all config files",
+        "Implement config validation with helpful error messages",
+        "Add default values for optional settings",
+        "Implement config hot-reload detection",
+        "Create getConfig() singleton for accessing configuration"
+      ],
+      "passes": false
+    },
+    {
+      "id": "config-002",
+      "category": "configuration",
+      "description": "Main configuration file (main.yaml)",
+      "steps": [
+        "Define main.yaml schema with Zod",
+        "Implement account settings section",
+        "Implement API tier configuration with limits",
+        "Implement general settings (timezone, log_level)",
+        "Implement feature toggles section",
+        "Implement autonomy levels configuration",
+        "Add validation for all settings"
+      ],
+      "passes": false
+    },
+    {
+      "id": "config-003",
+      "category": "configuration",
+      "description": "Persona configuration file (persona.yaml)",
+      "steps": [
+        "Define persona.yaml schema with Zod",
+        "Implement identity section (name, role)",
+        "Implement niche/topics configuration",
+        "Implement voice characteristics (tone, style, personality)",
+        "Implement content rules (do/don't lists)",
+        "Implement example posts storage",
+        "Implement A/B testing variation config"
+      ],
+      "passes": false
+    },
+    {
+      "id": "config-004",
+      "category": "configuration",
+      "description": "Schedule configuration file (schedule.yaml)",
+      "steps": [
+        "Define schedule.yaml schema with Zod",
+        "Implement frequency settings (min/max posts per day)",
+        "Implement day-specific overrides",
+        "Implement active hours configuration",
+        "Implement blackout periods",
+        "Implement inactivity behavior settings",
+        "Implement queue management settings"
+      ],
+      "passes": false
+    },
+    {
+      "id": "config-005",
+      "category": "configuration",
+      "description": "Moderation configuration file (moderation.yaml)",
+      "steps": [
+        "Define moderation.yaml schema with Zod",
+        "Implement keyword blocklist (words and phrases)",
+        "Implement topic rules (engage, avoid, alert_only)",
+        "Implement AI safety check settings",
+        "Implement brand safety settings",
+        "Add validation for moderation rules"
+      ],
+      "passes": false
+    },
+    {
+      "id": "config-006",
+      "category": "configuration",
+      "description": "AI models configuration file (models.yaml)",
+      "steps": [
+        "Define models.yaml schema with Zod",
+        "Implement OpenRouter base settings",
+        "Implement model assignments per feature",
+        "Implement temperature and token settings per model",
+        "Implement image generation configuration",
+        "Add prompt template configuration"
+      ],
+      "passes": false
+    },
+    {
+      "id": "config-007",
+      "category": "configuration",
+      "description": "Interactive setup wizard",
+      "steps": [
+        "Create setup wizard entry point",
+        "Implement welcome screen with overview",
+        "Implement X API credentials input and validation",
+        "Implement OpenRouter API key input and validation",
+        "Implement persona quick setup (niche, tone)",
+        "Implement schedule preferences setup",
+        "Implement review and confirm screen",
+        "Generate all config files from wizard input",
+        "Add --api and --reset flags for partial setup"
+      ],
+      "passes": false
+    },
+    {
+      "id": "storage-001",
+      "category": "storage",
+      "description": "File-based storage layer foundation",
+      "steps": [
+        "Create data directory structure (~/.social-agent/data/)",
+        "Implement safeWrite utility for atomic file writes",
+        "Implement safeRead utility with error handling",
+        "Implement loadWithRecovery for corrupted files",
+        "Create storage singleton for accessing data files",
+        "Add file locking for concurrent access prevention"
+      ],
+      "passes": false
+    },
+    {
+      "id": "storage-002",
+      "category": "storage",
+      "description": "Queue data storage (queue.json)",
+      "steps": [
+        "Define queue item schema with Zod",
+        "Implement queue file read/write operations",
+        "Implement addToQueue function",
+        "Implement removeFromQueue function",
+        "Implement updateQueueItem function",
+        "Implement getQueueByStatus function",
+        "Add queue item ID generation with UUID"
+      ],
+      "passes": false
+    },
+    {
+      "id": "storage-003",
+      "category": "storage",
+      "description": "Drafts data storage (drafts.json)",
+      "steps": [
+        "Define draft item schema with Zod",
+        "Implement drafts file read/write operations",
+        "Implement saveDraft function",
+        "Implement updateDraft function",
+        "Implement deleteDraft function",
+        "Implement listDrafts function",
+        "Implement moveDraftToQueue function"
+      ],
+      "passes": false
+    },
+    {
+      "id": "storage-004",
+      "category": "storage",
+      "description": "Analytics data storage (analytics.json)",
+      "steps": [
+        "Define post metrics schema with Zod",
+        "Define aggregates schema (daily, weekly, monthly)",
+        "Implement analytics file read/write operations",
+        "Implement recordPostMetrics function",
+        "Implement updatePostMetrics function",
+        "Implement calculateAggregates function",
+        "Implement getAnalytics with date range filtering"
+      ],
+      "passes": false
+    },
+    {
+      "id": "storage-005",
+      "category": "storage",
+      "description": "Learning data storage (learning.json)",
+      "steps": [
+        "Define learning patterns schema with Zod",
+        "Define A/B test schema",
+        "Implement learning file read/write operations",
+        "Implement updatePatterns function",
+        "Implement recordABTestResult function",
+        "Implement getWinningVariants function",
+        "Implement updateModelWeights function"
+      ],
+      "passes": false
+    },
+    {
+      "id": "storage-006",
+      "category": "storage",
+      "description": "Content graph storage (content-graph.json)",
+      "steps": [
+        "Define content node schema with Zod",
+        "Implement content-graph file read/write operations",
+        "Implement addContentNode function",
+        "Implement findSimilarContent function",
+        "Implement content hash generation",
+        "Implement semantic vector storage",
+        "Implement similarity threshold checking"
+      ],
+      "passes": false
+    },
+    {
+      "id": "storage-007",
+      "category": "storage",
+      "description": "Network data storage (network.json)",
+      "steps": [
+        "Define suggested follow schema with Zod",
+        "Define engagement target schema with Zod",
+        "Define community schema with Zod",
+        "Implement network file read/write operations",
+        "Implement addSuggestedFollow function",
+        "Implement updateEngagementTarget function",
+        "Implement addCommunity function"
+      ],
+      "passes": false
+    },
+    {
+      "id": "storage-008",
+      "category": "storage",
+      "description": "Auto-backup system",
+      "steps": [
+        "Create backups directory structure",
+        "Implement createBackup function",
+        "Implement backup scheduling (on agent start if >24h)",
+        "Implement backup retention cleanup",
+        "Implement listBackups function",
+        "Implement restoreFromBackup function",
+        "Create backup CLI commands (create, list, restore)"
+      ],
+      "passes": false
+    },
+    {
+      "id": "storage-009",
+      "category": "storage",
+      "description": "Data export functionality",
+      "steps": [
+        "Implement JSON export for all data",
+        "Implement CSV export for posts and metrics",
+        "Implement Markdown export for posts",
+        "Add date range filtering for exports",
+        "Add performance filtering for exports",
+        "Create export CLI command with format options"
+      ],
+      "passes": false
+    },
+    {
+      "id": "cli-001",
+      "category": "cli",
+      "description": "CLI entry point and command structure",
+      "steps": [
+        "Set up Commander.js with main program",
+        "Configure global options (--verbose, --sandbox, --config)",
+        "Implement version and help commands",
+        "Create command directory structure",
+        "Implement command loading from files",
+        "Add colored output utilities with chalk",
+        "Implement graceful shutdown handlers"
+      ],
+      "passes": false
+    },
+    {
+      "id": "cli-002",
+      "category": "cli",
+      "description": "Dashboard command (launches TUI)",
+      "steps": [
+        "Create dashboard command entry",
+        "Initialize Ink renderer",
+        "Load App component with full TUI",
+        "Pass config and state to TUI",
+        "Handle TUI exit gracefully",
+        "Add --tab flag to open specific tab"
+      ],
+      "passes": false
+    },
+    {
+      "id": "cli-003",
+      "category": "cli",
+      "description": "Post command for content creation",
+      "steps": [
+        "Create post command with subcommands",
+        "Implement 'post create' for new content",
+        "Implement 'post generate' for AI-generated content",
+        "Implement 'post thread' for thread creation",
+        "Add --schedule flag for scheduling",
+        "Add --now flag for immediate posting",
+        "Add --draft flag to save as draft"
+      ],
+      "passes": false
+    },
+    {
+      "id": "cli-004",
+      "category": "cli",
+      "description": "Queue command for queue management",
+      "steps": [
+        "Create queue command with subcommands",
+        "Implement 'queue list' to show queue items",
+        "Implement 'queue approve <id>' to approve item",
+        "Implement 'queue reject <id>' to reject item",
+        "Implement 'queue edit <id>' to edit item",
+        "Implement 'queue process' to run queue processor",
+        "Add filtering by status"
+      ],
+      "passes": false
+    },
+    {
+      "id": "cli-005",
+      "category": "cli",
+      "description": "Engage command for engagement operations",
+      "steps": [
+        "Create engage command with subcommands",
+        "Implement 'engage run' to process engagement queue",
+        "Implement 'engage replies' to handle pending replies",
+        "Implement 'engage quotes' to handle quote opportunities",
+        "Implement 'engage network' to run network building",
+        "Add --dry-run flag for preview mode"
+      ],
+      "passes": false
+    },
+    {
+      "id": "cli-006",
+      "category": "cli",
+      "description": "Trends command for trend monitoring",
+      "steps": [
+        "Create trends command",
+        "Implement trending topics display",
+        "Implement viral content detection display",
+        "Implement opportunity alerts display",
+        "Add --generate flag to create content from trend",
+        "Add niche filtering options"
+      ],
+      "passes": false
+    },
+    {
+      "id": "cli-007",
+      "category": "cli",
+      "description": "Analytics command for metrics viewing",
+      "steps": [
+        "Create analytics command with subcommands",
+        "Implement 'analytics summary' for quick overview",
+        "Implement 'analytics posts' for post performance",
+        "Implement 'analytics report' to generate report",
+        "Add --period flag (day, week, month)",
+        "Add --export flag for data export"
+      ],
+      "passes": false
+    },
+    {
+      "id": "cli-008",
+      "category": "cli",
+      "description": "Config command for configuration management",
+      "steps": [
+        "Create config command with subcommands",
+        "Implement 'config show' to display current config",
+        "Implement 'config edit' to open config in editor",
+        "Implement 'config validate' to check config",
+        "Implement 'config reset' to reset to defaults",
+        "Add --section flag to target specific config file"
+      ],
+      "passes": false
+    },
+    {
+      "id": "api-001",
+      "category": "x-api",
+      "description": "X API client foundation",
+      "steps": [
+        "Create XClient class with axios instance",
+        "Implement OAuth 1.0a authentication",
+        "Load credentials from environment variables",
+        "Implement rate limit tracking from headers",
+        "Implement request logging for debugging",
+        "Add sandbox mode support with separate credentials",
+        "Implement API tier limit awareness"
+      ],
+      "passes": false
+    },
+    {
+      "id": "api-002",
+      "category": "x-api",
+      "description": "X API posting operations",
+      "steps": [
+        "Implement post() method for single tweets",
+        "Implement postThread() method for multi-tweet threads",
+        "Implement reply() method for replying to tweets",
+        "Implement quoteTweet() method for quote tweets",
+        "Implement deleteTweet() method",
+        "Add media attachment support to post methods",
+        "Handle API errors with proper error types"
+      ],
+      "passes": false
+    },
+    {
+      "id": "api-003",
+      "category": "x-api",
+      "description": "X API reading operations",
+      "steps": [
+        "Implement getTimeline() for user timeline",
+        "Implement getMentions() for user mentions",
+        "Implement getTweet() for single tweet details",
+        "Implement searchTweets() for tweet search",
+        "Implement getTrending() for trending topics",
+        "Add pagination support for list endpoints",
+        "Implement response caching for read operations"
+      ],
+      "passes": false
+    },
+    {
+      "id": "api-004",
+      "category": "x-api",
+      "description": "X API engagement operations",
+      "steps": [
+        "Implement like() method",
+        "Implement unlike() method",
+        "Implement retweet() method",
+        "Implement unretweet() method",
+        "Implement follow() method",
+        "Implement unfollow() method",
+        "Implement getFollowers() method",
+        "Implement getFollowing() method"
+      ],
+      "passes": false
+    },
+    {
+      "id": "api-005",
+      "category": "x-api",
+      "description": "X API media operations",
+      "steps": [
+        "Implement uploadMedia() using v1.1 endpoint",
+        "Handle chunked upload for large files",
+        "Implement media status checking",
+        "Support image formats (PNG, JPG, GIF)",
+        "Support video upload",
+        "Add media validation before upload",
+        "Return media IDs for attachment to tweets"
+      ],
+      "passes": false
+    },
+    {
+      "id": "api-006",
+      "category": "x-api",
+      "description": "X API user operations",
+      "steps": [
+        "Implement getMe() for authenticated user",
+        "Implement getUser() for user lookup",
+        "Implement getUserByUsername() for username lookup",
+        "Implement getUsers() for batch user lookup",
+        "Cache user data to reduce API calls",
+        "Extract user metrics (followers, following)"
+      ],
+      "passes": false
+    },
+    {
+      "id": "agent-001",
+      "category": "agent-sdk",
+      "description": "Vercel AI SDK setup and OpenRouter provider",
+      "steps": [
+        "Install @ai-sdk/openai and ai packages",
+        "Create OpenRouter provider using createOpenAI with custom baseURL",
+        "Configure provider with API key from environment",
+        "Create getModel() utility for model selection",
+        "Implement streamText and generateText wrappers",
+        "Add error handling for AI SDK errors",
+        "Test connection with simple completion"
+      ],
+      "passes": false
+    },
+    {
+      "id": "agent-002",
+      "category": "agent-sdk",
+      "description": "Agent tool definitions for X operations",
+      "steps": [
+        "Create tools directory structure",
+        "Define postTweet tool with Zod schema",
+        "Define postThread tool with Zod schema",
+        "Define replyToTweet tool with Zod schema",
+        "Define quoteTweet tool with Zod schema",
+        "Define searchTweets tool with Zod schema",
+        "Define getTrends tool with Zod schema",
+        "Wire tools to X API client methods"
+      ],
+      "passes": false
+    },
+    {
+      "id": "agent-003",
+      "category": "agent-sdk",
+      "description": "Agent tool definitions for engagement",
+      "steps": [
+        "Define likeTweet tool with Zod schema",
+        "Define followUser tool with Zod schema",
+        "Define getMentions tool with Zod schema",
+        "Define getTimeline tool with Zod schema",
+        "Define analyzeAccount tool with Zod schema",
+        "Define suggestFollows tool with Zod schema",
+        "Wire tools to engagement handlers"
+      ],
+      "passes": false
+    },
+    {
+      "id": "agent-004",
+      "category": "agent-sdk",
+      "description": "Agent tool definitions for content management",
+      "steps": [
+        "Define addToQueue tool with Zod schema",
+        "Define getQueueStatus tool with Zod schema",
+        "Define saveDraft tool with Zod schema",
+        "Define generateImage tool with Zod schema",
+        "Define checkContentSafety tool with Zod schema",
+        "Define getAnalytics tool with Zod schema",
+        "Wire tools to content engine methods"
+      ],
+      "passes": false
+    },
+    {
+      "id": "agent-005",
+      "category": "agent-sdk",
+      "description": "Agent memory and conversation context",
+      "steps": [
+        "Create AgentMemory class for context management",
+        "Implement conversation history storage",
+        "Implement short-term memory (current session)",
+        "Implement long-term memory (persisted to file)",
+        "Create memory retrieval for relevant context",
+        "Implement memory summarization for long conversations",
+        "Add memory to agent system prompts"
+      ],
+      "passes": false
+    },
+    {
+      "id": "agent-006",
+      "category": "agent-sdk",
+      "description": "Multi-step reasoning with tool loops",
+      "steps": [
+        "Create AgentExecutor class using AI SDK generateText",
+        "Implement tool call loop with maxSteps configuration",
+        "Handle tool results and feed back to model",
+        "Implement step logging for transparency",
+        "Add reasoning chain storage",
+        "Implement early exit conditions",
+        "Handle errors in multi-step execution"
+      ],
+      "passes": false
+    },
+    {
+      "id": "agent-007",
+      "category": "agent-sdk",
+      "description": "Agent system prompts and persona injection",
+      "steps": [
+        "Create system prompt templates for different tasks",
+        "Inject persona configuration into prompts",
+        "Inject current context (time, recent posts)",
+        "Inject learning insights into prompts",
+        "Create task-specific prompt variations",
+        "Implement prompt versioning for A/B testing"
+      ],
+      "passes": false
+    },
+    {
+      "id": "agent-008",
+      "category": "agent-sdk",
+      "description": "Agent state and session management",
+      "steps": [
+        "Create AgentState class for runtime state",
+        "Track current task and progress",
+        "Track tool usage and results",
+        "Implement state persistence between runs",
+        "Create state recovery on restart",
+        "Add state inspection for debugging"
+      ],
+      "passes": false
+    },
+    {
+      "id": "agent-009",
+      "category": "agent-sdk",
+      "description": "Streaming responses in TUI",
+      "steps": [
+        "Implement streamText for real-time output",
+        "Create StreamingText TUI component",
+        "Handle partial responses in UI",
+        "Show tool calls as they happen",
+        "Display reasoning steps in real-time",
+        "Add cancel streaming capability"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ai-001",
+      "category": "openrouter",
+      "description": "OpenRouter client foundation",
+      "steps": [
+        "Create OpenRouterClient class with axios instance",
+        "Implement API key authentication",
+        "Load credentials from environment variables",
+        "Implement complete() method for chat completions",
+        "Implement listModels() for available models",
+        "Implement checkLimits() for usage tracking",
+        "Add request/response logging"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ai-002",
+      "category": "openrouter",
+      "description": "AI prompt templates system",
+      "steps": [
+        "Create prompt template directory structure",
+        "Implement template loading and interpolation",
+        "Create content generation prompt template",
+        "Create reply generation prompt template",
+        "Create analysis prompt template",
+        "Create moderation prompt template",
+        "Create image prompt generation template"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ai-003",
+      "category": "openrouter",
+      "description": "Content generation AI service",
+      "steps": [
+        "Create ContentGenerator class",
+        "Implement generatePost() for single posts",
+        "Implement generateThread() for thread creation",
+        "Implement repurposeContent() for content transformation",
+        "Implement generateFromTrend() for trend-based content",
+        "Apply persona/voice configuration to prompts",
+        "Return confidence scores with generated content"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ai-004",
+      "category": "openrouter",
+      "description": "Reply generation AI service",
+      "steps": [
+        "Create ReplyGenerator class",
+        "Implement generateReply() for contextual replies",
+        "Implement analyzeContext() for reply context",
+        "Apply persona voice to reply generation",
+        "Handle different reply types (question, thanks, discussion)",
+        "Return confidence scores with replies"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ai-005",
+      "category": "openrouter",
+      "description": "AI image generation service",
+      "steps": [
+        "Create ImageGenerator class",
+        "Implement generateImage() with configurable model",
+        "Implement generatePromptFromContent() for auto-prompting",
+        "Apply style settings from configuration",
+        "Handle image generation errors gracefully",
+        "Return image URL/buffer for upload"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ai-006",
+      "category": "openrouter",
+      "description": "AI reasoning logger",
+      "steps": [
+        "Create ReasoningLogger class",
+        "Implement logDecision() for all AI decisions",
+        "Store input context, factors, reasoning chain",
+        "Store final decision and confidence score",
+        "Write to ai-reasoning.log file",
+        "Implement getReasoningHistory() for review",
+        "Add decision type categorization"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ai-007",
+      "category": "openrouter",
+      "description": "Confidence scoring system",
+      "steps": [
+        "Create ConfidenceScorer class",
+        "Implement scoreContent() for generated content",
+        "Implement voice alignment scoring",
+        "Implement topic relevance scoring",
+        "Implement predicted engagement scoring",
+        "Implement safety scoring",
+        "Combine scores with configurable weights",
+        "Return overall confidence score"
+      ],
+      "passes": false
+    },
+    {
+      "id": "ai-008",
+      "category": "openrouter",
+      "description": "AI improvement loop for low-confidence content",
+      "steps": [
+        "Create ContentImprover class",
+        "Implement improveContent() for low-confidence posts",
+        "Analyze why confidence was low",
+        "Apply targeted improvements",
+        "Re-score after improvements",
+        "Set max improvement iterations",
+        "Return improved content with new score"
+      ],
+      "passes": false
+    },
+    {
+      "id": "content-001",
+      "category": "content-engine",
+      "description": "Content engine core orchestration",
+      "steps": [
+        "Create ContentEngine class as main orchestrator",
+        "Implement createContent() main entry point",
+        "Route to appropriate generation method",
+        "Apply confidence scoring to all content",
+        "Apply moderation checks to all content",
+        "Handle content improvement loop",
+        "Return content with status and metadata"
+      ],
+      "passes": false
+    },
+    {
+      "id": "content-002",
+      "category": "content-engine",
+      "description": "Thread detection and creation logic",
+      "steps": [
+        "Create Threader class",
+        "Implement shouldThread() to detect thread need",
+        "Implement splitIntoThread() for long content",
+        "Implement formatThread() with numbering",
+        "Ensure coherent narrative across tweets",
+        "Handle thread intro and conclusion",
+        "Apply optimal tweet length per thread part"
+      ],
+      "passes": false
+    },
+    {
+      "id": "content-003",
+      "category": "content-engine",
+      "description": "Content deduplication with content graph",
+      "steps": [
+        "Create Deduplicator class",
+        "Implement checkDuplicate() against content graph",
+        "Implement calculateSimilarity() for semantic check",
+        "Generate content hashes for exact matching",
+        "Generate semantic vectors for similar matching",
+        "Return similarity score and similar posts",
+        "Block posts above similarity threshold"
+      ],
+      "passes": false
+    },
+    {
+      "id": "content-004",
+      "category": "content-engine",
+      "description": "RSS feed integration for content ideas",
+      "steps": [
+        "Create RSSClient class",
+        "Implement fetchFeed() for single feed",
+        "Implement fetchAllFeeds() for configured feeds",
+        "Parse feed items into ContentIdea objects",
+        "Score relevance against user niche",
+        "Filter and rank content ideas",
+        "Store ideas for content generation reference"
+      ],
+      "passes": false
+    },
+    {
+      "id": "content-005",
+      "category": "content-engine",
+      "description": "Content types and formatting",
+      "steps": [
+        "Define content type enum (educational, personal, engagement, commentary)",
+        "Implement formatForType() per content type",
+        "Apply type-specific generation prompts",
+        "Implement type selection based on config",
+        "Add type distribution for variety",
+        "Track type performance for learning"
+      ],
+      "passes": false
+    },
+    {
+      "id": "queue-001",
+      "category": "queue-system",
+      "description": "Queue manager core functionality",
+      "steps": [
+        "Create QueueManager class",
+        "Implement addToQueue() with validation",
+        "Implement getQueue() with filtering",
+        "Implement updateItem() for status changes",
+        "Implement removeItem() for deletion",
+        "Implement getNextToPost() for processing",
+        "Maintain queue ordering by scheduled time"
+      ],
+      "passes": false
+    },
+    {
+      "id": "queue-002",
+      "category": "queue-system",
+      "description": "AI-optimized timing calculation",
+      "steps": [
+        "Create TimingOptimizer class",
+        "Implement calculateOptimalTime() for new posts",
+        "Use learning data for best posting times",
+        "Consider day of week patterns",
+        "Consider active hours configuration",
+        "Avoid blackout periods",
+        "Space posts according to frequency settings"
+      ],
+      "passes": false
+    },
+    {
+      "id": "queue-003",
+      "category": "queue-system",
+      "description": "Queue processor for posting",
+      "steps": [
+        "Create QueueProcessor class",
+        "Implement processQueue() main loop",
+        "Check for posts due for publishing",
+        "Handle single posts and threads",
+        "Handle media uploads before posting",
+        "Update post status after publishing",
+        "Record analytics data for posted content",
+        "Handle errors and retry logic"
+      ],
+      "passes": false
+    },
+    {
+      "id": "queue-004",
+      "category": "queue-system",
+      "description": "Approval workflow implementation",
+      "steps": [
+        "Create ApprovalWorkflow class",
+        "Implement confidence-based auto-approval",
+        "Route low-confidence to improvement loop",
+        "Route still-low to review queue",
+        "Implement approve() for manual approval",
+        "Implement reject() for rejection",
+        "Track approval stats for analysis"
+      ],
+      "passes": false
+    },
+    {
+      "id": "tui-001",
+      "category": "tui",
+      "description": "TUI application shell and navigation",
+      "steps": [
+        "Create App.tsx main component",
+        "Implement tab state management",
+        "Create TabBar component with tab switching",
+        "Create StatusBar component with status info",
+        "Implement keyboard navigation (Tab, numbers)",
+        "Handle global shortcuts (q, h, r)",
+        "Create AppContext for shared state"
+      ],
+      "passes": false
+    },
+    {
+      "id": "tui-002",
+      "category": "tui",
+      "description": "Dashboard tab screen",
+      "steps": [
+        "Create Dashboard.tsx screen component",
+        "Create StatsCard component for metrics display",
+        "Display today's stats (posts, engagement, impressions)",
+        "Display queue status summary",
+        "Display recent activity list",
+        "Display hot trend alert if available",
+        "Implement refresh functionality"
+      ],
+      "passes": false
+    },
+    {
+      "id": "tui-003",
+      "category": "tui",
+      "description": "Queue tab screen",
+      "steps": [
+        "Create Queue.tsx screen component",
+        "Create QueueItem component for list items",
+        "Display queue grouped by status",
+        "Implement item selection with keyboard",
+        "Implement approve/reject actions",
+        "Implement edit action with modal",
+        "Implement schedule modification",
+        "Add filtering by status"
+      ],
+      "passes": false
+    },
+    {
+      "id": "tui-004",
+      "category": "tui",
+      "description": "Engage tab screen",
+      "steps": [
+        "Create Engage.tsx screen component",
+        "Display pending replies with drafts",
+        "Display quote tweet opportunities",
+        "Implement send/edit/skip actions",
+        "Show engagement stats summary",
+        "Implement run engagement action",
+        "Show network building suggestions"
+      ],
+      "passes": false
+    },
+    {
+      "id": "tui-005",
+      "category": "tui",
+      "description": "Trends tab screen",
+      "steps": [
+        "Create Trends.tsx screen component",
+        "Create TrendItem component",
+        "Display trending topics with relevance",
+        "Display viral content in network",
+        "Show suggested actions per trend",
+        "Implement generate from trend action",
+        "Implement ignore trend action",
+        "Add last updated timestamp"
+      ],
+      "passes": false
+    },
+    {
+      "id": "tui-006",
+      "category": "tui",
+      "description": "Analytics tab screen",
+      "steps": [
+        "Create Analytics.tsx screen component",
+        "Display summary metrics",
+        "Display top performing posts list",
+        "Display AI insights and recommendations",
+        "Implement period selection (day, week, month)",
+        "Implement export action",
+        "Implement detailed view navigation"
+      ],
+      "passes": false
+    },
+    {
+      "id": "tui-007",
+      "category": "tui",
+      "description": "Config tab screen",
+      "steps": [
+        "Create Config.tsx screen component",
+        "Display persona settings summary",
+        "Display autonomy levels summary",
+        "Display schedule settings summary",
+        "Display API connection status",
+        "Implement edit links to config files",
+        "Add connection test functionality"
+      ],
+      "passes": false
+    },
+    {
+      "id": "tui-008",
+      "category": "tui",
+      "description": "Background operations status panel",
+      "steps": [
+        "Create OperationsPanel component",
+        "Display running operations with progress",
+        "Implement spinner for indeterminate progress",
+        "Implement progress bar for known progress",
+        "Implement cancel operation action",
+        "Show completed/failed status",
+        "Auto-dismiss completed after delay"
+      ],
+      "passes": false
+    },
+    {
+      "id": "tui-009",
+      "category": "tui",
+      "description": "Error display components",
+      "steps": [
+        "Create ErrorNotification component",
+        "Implement user-friendly message display",
+        "Implement verbose mode toggle",
+        "Implement retry action",
+        "Implement dismiss action",
+        "Create ErrorBoundary for crash handling",
+        "Style with appropriate colors"
+      ],
+      "passes": false
+    },
+    {
+      "id": "tui-010",
+      "category": "tui",
+      "description": "Common TUI components library",
+      "steps": [
+        "Create Spinner component with ink-spinner",
+        "Create TextInput component for input fields",
+        "Create SelectInput for option selection",
+        "Create Table component for data display",
+        "Create Box layouts for panels",
+        "Create Modal component for overlays",
+        "Create ConfirmDialog for confirmations"
+      ],
+      "passes": false
+    },
+    {
+      "id": "engage-001",
+      "category": "engagement",
+      "description": "Engagement engine orchestration",
+      "steps": [
+        "Create EngagementEngine class",
+        "Implement runEngagement() main loop",
+        "Fetch mentions and replies to process",
+        "Route to appropriate handlers",
+        "Apply autonomy level checks",
+        "Track engagement actions for rate limiting",
+        "Log all engagement decisions"
+      ],
+      "passes": false
+    },
+    {
+      "id": "engage-002",
+      "category": "engagement",
+      "description": "Auto-reply system",
+      "steps": [
+        "Create AutoReplyHandler class",
+        "Implement detectReplyOpportunities()",
+        "Implement generateReply() with AI",
+        "Apply confidence-based posting",
+        "Handle different conversation contexts",
+        "Maintain reply queue for processing",
+        "Track reply effectiveness"
+      ],
+      "passes": false
+    },
+    {
+      "id": "engage-003",
+      "category": "engagement",
+      "description": "Strategic quote tweet system",
+      "steps": [
+        "Create QuoteTweetHandler class",
+        "Implement detectQuoteOpportunities()",
+        "Score opportunities by relevance and virality",
+        "Implement generateCommentary() with AI",
+        "Apply confidence-based posting",
+        "Track quote tweet performance",
+        "Learn from successful quotes"
+      ],
+      "passes": false
+    },
+    {
+      "id": "engage-004",
+      "category": "engagement",
+      "description": "Network building - Follow suggestions",
+      "steps": [
+        "Create NetworkBuilder class",
+        "Implement discoverAccounts() for niche accounts",
+        "Implement scoreRelevance() for accounts",
+        "Generate follow suggestions with reasoning",
+        "Track follow-back rates",
+        "Update network.json with suggestions",
+        "Implement executeFollow() action"
+      ],
+      "passes": false
+    },
+    {
+      "id": "engage-005",
+      "category": "engagement",
+      "description": "Network building - Engagement targets",
+      "steps": [
+        "Implement identifyEngagementTargets()",
+        "Score accounts by value and accessibility",
+        "Track interaction history per target",
+        "Measure relationship progress",
+        "Generate engagement recommendations",
+        "Prioritize targets for engagement queue"
+      ],
+      "passes": false
+    },
+    {
+      "id": "engage-006",
+      "category": "engagement",
+      "description": "Network building - Community detection",
+      "steps": [
+        "Implement detectCommunities() in niche",
+        "Cluster accounts by topic and interaction",
+        "Identify community leaders",
+        "Map relationship networks",
+        "Store communities in network.json",
+        "Generate community engagement strategies"
+      ],
+      "passes": false
+    },
+    {
+      "id": "engage-007",
+      "category": "engagement",
+      "description": "Engagement safety and limits",
+      "steps": [
+        "Implement engagement rate limiting",
+        "Track daily limits per action type",
+        "Implement safety checks for engagement",
+        "Skip toxic conversations",
+        "Skip spam/bot accounts",
+        "Respect block/mute lists",
+        "Apply topic avoid rules"
+      ],
+      "passes": false
+    },
+    {
+      "id": "analytics-001",
+      "category": "analytics",
+      "description": "Metrics collection service",
+      "steps": [
+        "Create MetricsCollector class",
+        "Implement collectPostMetrics() from X API",
+        "Schedule metrics collection (24h, 48h, 7d)",
+        "Store metrics in analytics.json",
+        "Handle API rate limits for collection",
+        "Implement batch collection for efficiency"
+      ],
+      "passes": false
+    },
+    {
+      "id": "analytics-002",
+      "category": "analytics",
+      "description": "Performance scoring system",
+      "steps": [
+        "Create PerformanceScorer class",
+        "Implement calculatePostScore() formula",
+        "Weight engagement types appropriately",
+        "Normalize against account average",
+        "Identify top performers",
+        "Track performance trends over time"
+      ],
+      "passes": false
+    },
+    {
+      "id": "analytics-003",
+      "category": "analytics",
+      "description": "Audience intelligence analysis",
+      "steps": [
+        "Create AudienceAnalyzer class",
+        "Implement analyzeActiveHours() for followers",
+        "Implement analyzeInterests() from engagement",
+        "Implement analyzeEngagementPatterns()",
+        "Generate audience insights summary",
+        "Provide recommendations based on insights"
+      ],
+      "passes": false
+    },
+    {
+      "id": "analytics-004",
+      "category": "analytics",
+      "description": "Report generation system",
+      "steps": [
+        "Create ReportGenerator class",
+        "Implement generateDailyReport()",
+        "Implement generateWeeklyReport()",
+        "Implement generateMonthlyReport()",
+        "Include summary stats, top posts, insights",
+        "Store reports for historical access",
+        "Format reports for CLI display"
+      ],
+      "passes": false
+    },
+    {
+      "id": "analytics-005",
+      "category": "analytics",
+      "description": "AI learning loop integration",
+      "steps": [
+        "Create LearningEngine class",
+        "Implement extractPatterns() from performance data",
+        "Update best posting times patterns",
+        "Update content type performance patterns",
+        "Update topic performance patterns",
+        "Implement applyLearning() to generation",
+        "Store learning data in learning.json"
+      ],
+      "passes": false
+    },
+    {
+      "id": "analytics-006",
+      "category": "analytics",
+      "description": "A/B testing framework",
+      "steps": [
+        "Create ABTestManager class",
+        "Implement createTest() for new experiments",
+        "Implement assignVariant() for content",
+        "Implement trackResult() for performance",
+        "Implement calculateWinner() with significance",
+        "Implement applyWinner() to future content",
+        "Store test results in learning.json"
+      ],
+      "passes": false
+    },
+    {
+      "id": "analytics-007",
+      "category": "analytics",
+      "description": "Trend detection and analysis",
+      "steps": [
+        "Create TrendAnalyzer class",
+        "Implement fetchTrendingTopics() from X",
+        "Implement scoreRelevance() to user niche",
+        "Implement detectViralContent() in network",
+        "Generate opportunity alerts",
+        "Provide suggested actions per trend",
+        "Cache trends with TTL"
+      ],
+      "passes": false
+    },
+    {
+      "id": "moderation-001",
+      "category": "moderation",
+      "description": "Content moderation pipeline",
+      "steps": [
+        "Create ModerationPipeline class",
+        "Implement moderateContent() main entry",
+        "Chain moderation checks in sequence",
+        "Return moderation result with reasons",
+        "Block content that fails any check",
+        "Log all moderation decisions"
+      ],
+      "passes": false
+    },
+    {
+      "id": "moderation-002",
+      "category": "moderation",
+      "description": "Keyword blocklist filter",
+      "steps": [
+        "Create KeywordFilter class",
+        "Load blocklist from moderation.yaml",
+        "Implement checkContent() for word matching",
+        "Implement checkPhrases() for phrase matching",
+        "Handle case insensitivity",
+        "Return matched terms in result",
+        "Block hashtags automatically"
+      ],
+      "passes": false
+    },
+    {
+      "id": "moderation-003",
+      "category": "moderation",
+      "description": "AI safety check",
+      "steps": [
+        "Create AISafetyChecker class",
+        "Implement checkSafety() with AI model",
+        "Check for offensive content",
+        "Check for misinformation risk",
+        "Check for unintended implications",
+        "Return safety score and issues",
+        "Use fast model for efficiency"
+      ],
+      "passes": false
+    },
+    {
+      "id": "moderation-004",
+      "category": "moderation",
+      "description": "Brand safety check",
+      "steps": [
+        "Create BrandSafetyChecker class",
+        "Implement checkBrandSafety() with AI",
+        "Verify consistency with persona",
+        "Check professional tone maintained",
+        "Identify reputation risks",
+        "Return brand safety score",
+        "Reference persona config in checks"
+      ],
+      "passes": false
+    },
+    {
+      "id": "moderation-005",
+      "category": "moderation",
+      "description": "Topic rules enforcement",
+      "steps": [
+        "Create TopicEnforcer class",
+        "Load topic rules from moderation.yaml",
+        "Implement checkTopic() for content topics",
+        "Detect topics using AI analysis",
+        "Apply engage/avoid/alert_only rules",
+        "Return topic verdict with reasoning"
+      ],
+      "passes": false
+    },
+    {
+      "id": "docs-001",
+      "category": "documentation",
+      "description": "README and getting started guide",
+      "steps": [
+        "Create comprehensive README.md",
+        "Include project description and features",
+        "Include quick start installation steps",
+        "Include basic usage examples",
+        "Include configuration overview",
+        "Include links to detailed docs",
+        "Add badges (version, license)"
+      ],
+      "passes": false
+    },
+    {
+      "id": "docs-002",
+      "category": "documentation",
+      "description": "Installation documentation",
+      "steps": [
+        "Create docs/installation.md",
+        "Document system requirements",
+        "Document npm installation steps",
+        "Document environment setup",
+        "Document API key acquisition (X, OpenRouter)",
+        "Document first run and setup wizard",
+        "Include troubleshooting for common issues"
+      ],
+      "passes": false
+    },
+    {
+      "id": "docs-003",
+      "category": "documentation",
+      "description": "Configuration reference documentation",
+      "steps": [
+        "Create docs/configuration.md",
+        "Document main.yaml all options",
+        "Document persona.yaml all options",
+        "Document schedule.yaml all options",
+        "Document moderation.yaml all options",
+        "Document models.yaml all options",
+        "Include example configurations"
+      ],
+      "passes": false
+    },
+    {
+      "id": "docs-004",
+      "category": "documentation",
+      "description": "Features documentation",
+      "steps": [
+        "Create docs/features/ directory",
+        "Create content.md for content features",
+        "Create scheduling.md for scheduling features",
+        "Create engagement.md for engagement features",
+        "Create analytics.md for analytics features",
+        "Create ai-features.md for AI capabilities",
+        "Include usage examples for each"
+      ],
+      "passes": false
+    },
+    {
+      "id": "docs-005",
+      "category": "documentation",
+      "description": "Architecture documentation",
+      "steps": [
+        "Create docs/architecture.md",
+        "Document system overview diagram",
+        "Document component responsibilities",
+        "Document data flow between components",
+        "Document file structure",
+        "Document extension points",
+        "Include technical decisions rationale"
+      ],
+      "passes": false
+    },
+    {
+      "id": "docs-006",
+      "category": "documentation",
+      "description": "CLI command reference",
+      "steps": [
+        "Create docs/cli-reference.md",
+        "Document all commands and subcommands",
+        "Document all flags and options",
+        "Include usage examples for each command",
+        "Document exit codes",
+        "Include common workflows"
+      ],
+      "passes": false
+    },
+    {
+      "id": "docs-007",
+      "category": "documentation",
+      "description": "Troubleshooting guide",
+      "steps": [
+        "Create docs/troubleshooting.md",
+        "Document common error messages",
+        "Document API authentication issues",
+        "Document rate limit handling",
+        "Document configuration issues",
+        "Document TUI display issues",
+        "Include debug mode usage"
+      ],
+      "passes": false
+    },
+    {
+      "id": "test-001",
+      "category": "testing",
+      "description": "Unit test infrastructure",
+      "steps": [
+        "Configure vitest with TypeScript",
+        "Create test utilities and helpers",
+        "Create mock factories for common objects",
+        "Set up test fixtures directory",
+        "Configure coverage reporting",
+        "Add test scripts to package.json"
+      ],
+      "passes": false
+    },
+    {
+      "id": "test-002",
+      "category": "testing",
+      "description": "Configuration and storage unit tests",
+      "steps": [
+        "Write tests for config loading",
+        "Write tests for config validation",
+        "Write tests for storage read/write",
+        "Write tests for backup operations",
+        "Write tests for data migrations",
+        "Achieve >80% coverage for storage"
+      ],
+      "passes": false
+    },
+    {
+      "id": "test-003",
+      "category": "testing",
+      "description": "AI and content unit tests",
+      "steps": [
+        "Write tests for prompt template interpolation",
+        "Write tests for confidence scoring",
+        "Write tests for content deduplication",
+        "Write tests for threading logic",
+        "Write tests for moderation checks",
+        "Mock OpenRouter responses for tests"
+      ],
+      "passes": false
+    },
+    {
+      "id": "test-004",
+      "category": "testing",
+      "description": "API client integration tests",
+      "steps": [
+        "Write tests for X API client (mocked)",
+        "Write tests for OpenRouter client (mocked)",
+        "Write tests for rate limit handling",
+        "Write tests for retry logic",
+        "Write tests for error handling",
+        "Use nock or similar for HTTP mocking"
+      ],
+      "passes": false
+    },
+    {
+      "id": "test-005",
+      "category": "testing",
+      "description": "Queue and scheduling tests",
+      "steps": [
+        "Write tests for queue management",
+        "Write tests for timing optimization",
+        "Write tests for approval workflow",
+        "Write tests for queue processing",
+        "Test edge cases (empty queue, all rejected)"
+      ],
+      "passes": false
+    },
+    {
+      "id": "test-006",
+      "category": "testing",
+      "description": "E2E tests with sandbox",
+      "steps": [
+        "Set up sandbox account for E2E tests",
+        "Write E2E test for post creation flow",
+        "Write E2E test for queue processing",
+        "Write E2E test for engagement flow",
+        "Write E2E test for analytics collection",
+        "Run E2E tests in CI with sandbox credentials"
+      ],
+      "passes": false
+    }
+  ],
+  "summary": {
+    "total_features": 83,
+    "categories": {
+      "infrastructure": 3,
+      "configuration": 7,
+      "storage": 9,
+      "cli": 8,
+      "x-api": 6,
+      "agent-sdk": 9,
+      "openrouter": 8,
+      "content-engine": 5,
+      "queue-system": 4,
+      "tui": 10,
+      "engagement": 7,
+      "analytics": 7,
+      "moderation": 5,
+      "documentation": 7,
+      "testing": 6
+    }
+  }
+}
