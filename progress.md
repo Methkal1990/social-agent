@@ -206,3 +206,13 @@
 - Created getXClient() singleton, resetXClient()
 - Exported types: XClientConfig, RateLimitInfo, UsageStats, ApiTierLimits
 - Added unit tests (31 new tests, 532 total)
+
+### api-002: X API posting operations ✅
+- Implemented post() method for single tweets with media/reply/quote support
+- Implemented postThread() for multi-tweet threads chained as replies
+- Implemented reply() for replying to tweets with validation
+- Implemented quoteTweet() for quote tweets with validation
+- Implemented deleteTweet() for deleting tweets
+- Added PostOptions, Tweet, ThreadResult, DeleteResult types
+- Exported new types from src/api/x/index.ts
+- Added unit tests (25 new tests, 557 total)

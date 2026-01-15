@@ -85,6 +85,38 @@ export interface ApiTierLimits {
   requestsPer15Min: number;
 }
 
+/**
+ * Options for posting a tweet.
+ */
+export interface PostOptions {
+  mediaIds?: string[];
+  replyTo?: string;
+  quoteTweetId?: string;
+}
+
+/**
+ * Tweet data returned from API.
+ */
+export interface Tweet {
+  id: string;
+  text: string;
+}
+
+/**
+ * Thread result containing multiple tweets.
+ */
+export interface ThreadResult {
+  rootId: string;
+  tweets: Tweet[];
+}
+
+/**
+ * Delete result.
+ */
+export interface DeleteResult {
+  deleted: boolean;
+}
+
 // Default API tier limits (basic tier)
 const DEFAULT_API_TIER_LIMITS: ApiTierLimits = {
   postsPerMonth: 1500,
@@ -417,6 +449,109 @@ export class XClient {
     }
 
     return undefined;
+  }
+
+  // ============================================================================
+  // Posting Operations
+  // ============================================================================
+
+  /**
+   * Create a single tweet.
+   */
+  async post(content: string, options?: PostOptions): Promise<Tweet> {
+    const body: Record<string, unknown> = { text: content };
+
+    // Add media attachments if provided
+    if (options?.mediaIds && options.mediaIds.length > 0) {
+      body.media = { media_ids: options.mediaIds };
+    }
+
+    // Add reply reference if provided
+    if (options?.replyTo) {
+      body.reply = { in_reply_to_tweet_id: options.replyTo };
+    }
+
+    // Add quote tweet reference if provided
+    if (options?.quoteTweetId) {
+      body.quote_tweet_id = options.quoteTweetId;
+    }
+
+    const response = await this.request<{ data: Tweet }>('POST', '/2/tweets', body);
+    return response.data;
+  }
+
+  /**
+   * Create a thread (multiple tweets chained as replies).
+   */
+  async postThread(tweets: string[]): Promise<ThreadResult> {
+    if (tweets.length === 0) {
+      throw new Error('Thread must contain at least one tweet');
+    }
+
+    const postedTweets: Tweet[] = [];
+    let previousId: string | undefined;
+
+    for (const tweetText of tweets) {
+      const options: PostOptions = {};
+      if (previousId) {
+        options.replyTo = previousId;
+      }
+
+      const tweet = await this.post(tweetText, options);
+      postedTweets.push(tweet);
+      previousId = tweet.id;
+    }
+
+    return {
+      rootId: postedTweets[0].id,
+      tweets: postedTweets,
+    };
+  }
+
+  /**
+   * Reply to a tweet.
+   */
+  async reply(tweetId: string, content: string, options?: Omit<PostOptions, 'replyTo'>): Promise<Tweet> {
+    if (!tweetId) {
+      throw new Error('Tweet ID is required');
+    }
+    if (!content) {
+      throw new Error('Reply content is required');
+    }
+
+    return this.post(content, {
+      ...options,
+      replyTo: tweetId,
+    });
+  }
+
+  /**
+   * Create a quote tweet.
+   */
+  async quoteTweet(tweetId: string, content: string, options?: Omit<PostOptions, 'quoteTweetId'>): Promise<Tweet> {
+    if (!tweetId) {
+      throw new Error('Tweet ID to quote is required');
+    }
+    if (!content) {
+      throw new Error('Quote content is required');
+    }
+
+    return this.post(content, {
+      ...options,
+      quoteTweetId: tweetId,
+    });
+  }
+
+  /**
+   * Delete a tweet.
+   */
+  async deleteTweet(tweetId: string): Promise<DeleteResult> {
+    if (!tweetId) {
+      throw new Error('Tweet ID is required');
+    }
+
+    const response = await this.request<{ data: { deleted: boolean } }>('DELETE', `/2/tweets/${tweetId}`);
+    return response.data;
   }
 }
 

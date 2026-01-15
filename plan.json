@@ -432,7 +432,7 @@
         "Add media attachment support to post methods",
         "Handle API errors with proper error types"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "api-003",

@@ -15,4 +15,8 @@ export {
   type ResponseLogInfo,
   type UsageStats,
   type ApiTierLimits,
+  type PostOptions,
+  type Tweet,
+  type ThreadResult,
+  type DeleteResult,
 } from './client.js';
