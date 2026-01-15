@@ -198,7 +198,7 @@
         "Implement listDrafts function",
         "Implement moveDraftToQueue function"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "storage-004",

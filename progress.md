@@ -61,3 +61,15 @@
 - Implemented getQueueItem() for single item lookup
 - Created getQueueStorage() singleton, resetQueueStorage()
 - Added unit tests (32 tests passing, 177 total)
+
+### storage-003: Drafts data storage (drafts.json) ✅
+- Defined Zod schemas: draftItemSchema, draftsDataSchema with type enum
+- Created DraftsStorage class with caching and persistence to drafts.json
+- Implemented saveDraft() with auto UUID and timestamps
+- Implemented updateDraft() with automatic updated_at tracking
+- Implemented deleteDraft() with ID-based removal
+- Implemented listDrafts() to get all drafts
+- Implemented getDraft() for single item lookup
+- Implemented moveDraftToQueue() to transfer draft to queue with options
+- Created getDraftsStorage() singleton, resetDraftsStorage()
+- Added unit tests (36 tests passing, 213 total)
