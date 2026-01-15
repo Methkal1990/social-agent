@@ -110,3 +110,12 @@
 - AI safety settings: enabled boolean, check_for array
 - Brand safety settings: enabled boolean, check_for array
 - Added comprehensive unit tests (16 new tests, 263 total)
+
+### config-006: AI models configuration file (models.yaml) ✅
+- ModelsConfigSchema defined with Zod (lines 255-329)
+- OpenRouter base settings: base_url with URL validation
+- Model assignments per feature: content_generation, engagement_replies, analysis, moderation
+- Temperature (0-2) and max_tokens (positive) validation per model
+- Image generation model config: model, size, quality fields
+- Image generation settings: enabled, style_prompt, prompt_template
+- Added comprehensive unit tests (18 new tests, 281 total)

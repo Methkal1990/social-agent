@@ -945,6 +945,344 @@ describe('ConfigLoader', () => {
       expect(config.version).toBe(1);
       expect(config.openrouter.base_url).toBe('https://openrouter.ai/api/v1');
     });
+
+    it('should load OpenRouter base settings', () => {
+      const modelsConfig = {
+        openrouter: {
+          base_url: 'https://custom-openrouter.example.com/api/v1',
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'models.yaml'), yaml.stringify(modelsConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModelsConfig();
+
+      expect(loaded.openrouter.base_url).toBe('https://custom-openrouter.example.com/api/v1');
+    });
+
+    it('should provide default OpenRouter base_url', () => {
+      const loader = new ConfigLoader(testConfigDir);
+      const config = loader.loadModelsConfig();
+
+      expect(config.openrouter.base_url).toBe('https://openrouter.ai/api/v1');
+    });
+
+    it('should throw ConfigError for invalid OpenRouter base_url', () => {
+      const invalidConfig = {
+        openrouter: {
+          base_url: 'not-a-valid-url',
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'models.yaml'), yaml.stringify(invalidConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      expect(() => loader.loadModelsConfig()).toThrow();
+    });
+
+    it('should load model assignments for content_generation', () => {
+      const modelsConfig = {
+        models: {
+          content_generation: {
+            model: 'anthropic/claude-3.5-sonnet',
+            temperature: 0.7,
+            max_tokens: 1000,
+          },
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'models.yaml'), yaml.stringify(modelsConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModelsConfig();
+
+      expect(loaded.models.content_generation.model).toBe('anthropic/claude-3.5-sonnet');
+      expect(loaded.models.content_generation.temperature).toBe(0.7);
+      expect(loaded.models.content_generation.max_tokens).toBe(1000);
+    });
+
+    it('should load model assignments for engagement_replies', () => {
+      const modelsConfig = {
+        models: {
+          engagement_replies: {
+            model: 'anthropic/claude-3-haiku',
+            temperature: 0.6,
+            max_tokens: 500,
+          },
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'models.yaml'), yaml.stringify(modelsConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModelsConfig();
+
+      expect(loaded.models.engagement_replies.model).toBe('anthropic/claude-3-haiku');
+      expect(loaded.models.engagement_replies.temperature).toBe(0.6);
+      expect(loaded.models.engagement_replies.max_tokens).toBe(500);
+    });
+
+    it('should load model assignments for analysis', () => {
+      const modelsConfig = {
+        models: {
+          analysis: {
+            model: 'anthropic/claude-3-haiku',
+            temperature: 0.3,
+            max_tokens: 2000,
+          },
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'models.yaml'), yaml.stringify(modelsConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModelsConfig();
+
+      expect(loaded.models.analysis.model).toBe('anthropic/claude-3-haiku');
+      expect(loaded.models.analysis.temperature).toBe(0.3);
+      expect(loaded.models.analysis.max_tokens).toBe(2000);
+    });
+
+    it('should load model assignments for moderation', () => {
+      const modelsConfig = {
+        models: {
+          moderation: {
+            model: 'anthropic/claude-3-haiku',
+            temperature: 0.1,
+            max_tokens: 500,
+          },
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'models.yaml'), yaml.stringify(modelsConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModelsConfig();
+
+      expect(loaded.models.moderation.model).toBe('anthropic/claude-3-haiku');
+      expect(loaded.models.moderation.temperature).toBe(0.1);
+      expect(loaded.models.moderation.max_tokens).toBe(500);
+    });
+
+    it('should validate temperature is between 0 and 2', () => {
+      const invalidConfig = {
+        models: {
+          content_generation: {
+            model: 'test-model',
+            temperature: 2.5, // Invalid: > 2
+            max_tokens: 1000,
+          },
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'models.yaml'), yaml.stringify(invalidConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      expect(() => loader.loadModelsConfig()).toThrow();
+    });
+
+    it('should validate temperature is not negative', () => {
+      const invalidConfig = {
+        models: {
+          content_generation: {
+            model: 'test-model',
+            temperature: -0.5, // Invalid: < 0
+            max_tokens: 1000,
+          },
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'models.yaml'), yaml.stringify(invalidConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      expect(() => loader.loadModelsConfig()).toThrow();
+    });
+
+    it('should validate max_tokens is positive', () => {
+      const invalidConfig = {
+        models: {
+          content_generation: {
+            model: 'test-model',
+            temperature: 0.7,
+            max_tokens: 0, // Invalid: not positive
+          },
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'models.yaml'), yaml.stringify(invalidConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      expect(() => loader.loadModelsConfig()).toThrow();
+    });
+
+    it('should provide default model settings for all features', () => {
+      const loader = new ConfigLoader(testConfigDir);
+      const config = loader.loadModelsConfig();
+
+      expect(config.models.content_generation.model).toBe('anthropic/claude-3.5-sonnet');
+      expect(config.models.content_generation.temperature).toBe(0.7);
+      expect(config.models.content_generation.max_tokens).toBe(1000);
+
+      expect(config.models.engagement_replies.model).toBe('anthropic/claude-3-haiku');
+      expect(config.models.engagement_replies.temperature).toBe(0.6);
+      expect(config.models.engagement_replies.max_tokens).toBe(500);
+
+      expect(config.models.analysis.model).toBe('anthropic/claude-3-haiku');
+      expect(config.models.analysis.temperature).toBe(0.3);
+      expect(config.models.analysis.max_tokens).toBe(2000);
+
+      expect(config.models.moderation.model).toBe('anthropic/claude-3-haiku');
+      expect(config.models.moderation.temperature).toBe(0.1);
+      expect(config.models.moderation.max_tokens).toBe(500);
+    });
+
+    it('should load image_generation model configuration', () => {
+      const modelsConfig = {
+        models: {
+          image_generation: {
+            model: 'openai/dall-e-3',
+            size: '1024x1024',
+            quality: 'standard',
+          },
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'models.yaml'), yaml.stringify(modelsConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModelsConfig();
+
+      expect(loaded.models.image_generation?.model).toBe('openai/dall-e-3');
+      expect(loaded.models.image_generation?.size).toBe('1024x1024');
+      expect(loaded.models.image_generation?.quality).toBe('standard');
+    });
+
+    it('should load image_generation settings with enabled flag', () => {
+      const modelsConfig = {
+        image_generation: {
+          enabled: true,
+          style_prompt: 'modern, clean, professional, tech-focused',
+          prompt_template: 'Create an image for: {topic}',
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'models.yaml'), yaml.stringify(modelsConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModelsConfig();
+
+      expect(loaded.image_generation.enabled).toBe(true);
+      expect(loaded.image_generation.style_prompt).toBe('modern, clean, professional, tech-focused');
+      expect(loaded.image_generation.prompt_template).toBe('Create an image for: {topic}');
+    });
+
+    it('should provide default false for image_generation.enabled', () => {
+      const loader = new ConfigLoader(testConfigDir);
+      const config = loader.loadModelsConfig();
+
+      expect(config.image_generation.enabled).toBe(false);
+    });
+
+    it('should load complete models config matching spec example', () => {
+      const fullModelsConfig = {
+        version: 1,
+        openrouter: {
+          base_url: 'https://openrouter.ai/api/v1',
+        },
+        models: {
+          content_generation: {
+            model: 'anthropic/claude-3.5-sonnet',
+            temperature: 0.7,
+            max_tokens: 1000,
+          },
+          engagement_replies: {
+            model: 'anthropic/claude-3-haiku',
+            temperature: 0.6,
+            max_tokens: 500,
+          },
+          analysis: {
+            model: 'anthropic/claude-3-haiku',
+            temperature: 0.3,
+            max_tokens: 2000,
+          },
+          moderation: {
+            model: 'anthropic/claude-3-haiku',
+            temperature: 0.1,
+            max_tokens: 500,
+          },
+          image_generation: {
+            model: 'openai/dall-e-3',
+            size: '1024x1024',
+            quality: 'standard',
+          },
+        },
+        image_generation: {
+          enabled: true,
+          style_prompt: 'modern, clean, professional, tech-focused',
+          prompt_template: 'Create an image for a social media post about: {topic}\nStyle: {style}',
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'models.yaml'), yaml.stringify(fullModelsConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModelsConfig();
+
+      expect(loaded.version).toBe(1);
+      expect(loaded.openrouter.base_url).toBe('https://openrouter.ai/api/v1');
+      expect(loaded.models.content_generation.model).toBe('anthropic/claude-3.5-sonnet');
+      expect(loaded.models.engagement_replies.model).toBe('anthropic/claude-3-haiku');
+      expect(loaded.models.analysis.model).toBe('anthropic/claude-3-haiku');
+      expect(loaded.models.moderation.model).toBe('anthropic/claude-3-haiku');
+      expect(loaded.models.image_generation?.model).toBe('openai/dall-e-3');
+      expect(loaded.image_generation.enabled).toBe(true);
+      expect(loaded.image_generation.style_prompt).toBe('modern, clean, professional, tech-focused');
+    });
+
+    it('should throw ConfigError for invalid version type', () => {
+      const invalidConfig = { version: 'not a number' };
+      fs.writeFileSync(path.join(testConfigDir, 'models.yaml'), yaml.stringify(invalidConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      expect(() => loader.loadModelsConfig()).toThrow();
+    });
+
+    it('should allow different model providers', () => {
+      const modelsConfig = {
+        models: {
+          content_generation: {
+            model: 'openai/gpt-4-turbo',
+            temperature: 0.8,
+            max_tokens: 2000,
+          },
+          engagement_replies: {
+            model: 'google/gemini-pro',
+            temperature: 0.5,
+            max_tokens: 800,
+          },
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'models.yaml'), yaml.stringify(modelsConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModelsConfig();
+
+      expect(loaded.models.content_generation.model).toBe('openai/gpt-4-turbo');
+      expect(loaded.models.engagement_replies.model).toBe('google/gemini-pro');
+    });
+
+    it('should accept temperature at boundaries (0 and 2)', () => {
+      const modelsConfig = {
+        models: {
+          content_generation: {
+            model: 'test-model',
+            temperature: 0,
+            max_tokens: 1000,
+          },
+          engagement_replies: {
+            model: 'test-model',
+            temperature: 2,
+            max_tokens: 500,
+          },
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'models.yaml'), yaml.stringify(modelsConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModelsConfig();
+
+      expect(loaded.models.content_generation.temperature).toBe(0);
+      expect(loaded.models.engagement_replies.temperature).toBe(2);
+    });
   });
 
   describe('loadAll', () => {

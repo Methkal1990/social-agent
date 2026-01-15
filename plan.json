@@ -137,7 +137,7 @@
         "Implement image generation configuration",
         "Add prompt template configuration"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "config-007",
