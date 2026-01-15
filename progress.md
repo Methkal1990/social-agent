@@ -18,3 +18,15 @@
 - Added colorized console output using chalk
 - Created singleton accessors: getLogger(), getAIReasoningLogger()
 - Added unit tests (26 tests passing)
+
+### infra-003: Error handling utilities and types ✅
+- Created AppError base class with user-friendly messages
+- Created XAPIError for X API errors with status code and endpoint
+- Created OpenRouterError for AI errors with model info
+- Created ConfigError for configuration issues with file path
+- Created NetworkError for connectivity issues with error codes
+- Implemented withRetry utility with exponential backoff
+- Implemented isRetryable error classification
+- Added collectErrorContext for debugging with environment info
+- Exported all utilities from @/utils/errors.js
+- Added unit tests (53 tests passing, 79 total)
