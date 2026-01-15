@@ -119,3 +119,16 @@
 - Image generation model config: model, size, quality fields
 - Image generation settings: enabled, style_prompt, prompt_template
 - Added comprehensive unit tests (18 new tests, 281 total)
+
+### storage-004: Analytics data storage (analytics.json) ✅
+- Defined postMetricsSchema with likes, retweets, replies, impressions, collected_at
+- Defined postAnalyticsSchema with id, queue_id, content, metrics, performance_score, metadata
+- Defined dailyAggregateSchema and aggregatesSchema (daily, weekly, monthly)
+- Created AnalyticsStorage class with caching and persistence to analytics.json
+- Implemented recordPostMetrics() for adding new post analytics
+- Implemented updatePostMetrics() for updating metrics and performance score
+- Implemented getPost() for single post lookup
+- Implemented getPostsByDateRange() for date-filtered queries
+- Implemented calculateDailyAggregate() for computing and storing daily stats
+- Created getAnalyticsStorage() singleton, resetAnalyticsStorage()
+- Added unit tests (32 new tests, 313 total)
