@@ -240,3 +240,14 @@
 - Added UserData, UsersListResponse, UsersListOptions types
 - Exported new types from src/api/x/index.ts
 - Added unit tests (48 new tests, 640 total)
+
+### api-005: X API media operations ✅
+- Implemented uploadMedia() using v1.1 chunked upload endpoint (INIT/APPEND/FINALIZE flow)
+- Implemented chunked upload for large files (1MB chunks)
+- Implemented checkMediaStatus() for async processing status
+- Implemented waitForMediaProcessing() with configurable timeout/polling
+- Added validateMediaFile() for pre-upload validation
+- Supported formats: PNG, JPEG, WEBP (5MB), GIF (15MB), MP4 video (512MB)
+- Added MediaCategory, MediaUploadResult, MediaProcessingStatus, MediaValidationResult types
+- Exported new types from src/api/x/index.ts
+- Added unit tests (34 new tests, 674 total)

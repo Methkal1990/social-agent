@@ -261,6 +261,74 @@ export interface UsersListOptions {
   userFields?: string[];
 }
 
+/**
+ * Media category for upload.
+ */
+export type MediaCategory = 'tweet_image' | 'tweet_gif' | 'tweet_video';
+
+/**
+ * Media upload result.
+ */
+export interface MediaUploadResult {
+  mediaId: string;
+  expiresAfterSecs?: number;
+  size?: number;
+  imageInfo?: {
+    imageType: string;
+    width: number;
+    height: number;
+  };
+  videoInfo?: {
+    videoType: string;
+  };
+  processingInfo?: {
+    state: 'pending' | 'in_progress' | 'failed' | 'succeeded';
+    checkAfterSecs?: number;
+    progressPercent?: number;
+  };
+}
+
+/**
+ * Media processing status.
+ */
+export interface MediaProcessingStatus {
+  state: 'pending' | 'in_progress' | 'failed' | 'succeeded';
+  checkAfterSecs?: number;
+  progressPercent?: number;
+  error?: {
+    code: number;
+    name: string;
+    message: string;
+  };
+}
+
+/**
+ * Options for waiting on media processing.
+ */
+export interface MediaProcessingOptions {
+  maxWaitMs?: number;
+  pollIntervalMs?: number;
+}
+
+/**
+ * Media validation result.
+ */
+export interface MediaValidationResult {
+  valid: boolean;
+  category?: MediaCategory;
+  error?: string;
+}
+
+// Supported media types and their limits
+const MEDIA_TYPE_CONFIG: Record<string, { category: MediaCategory; maxSizeBytes: number }> = {
+  'image/png': { category: 'tweet_image', maxSizeBytes: 5 * 1024 * 1024 }, // 5MB
+  'image/jpeg': { category: 'tweet_image', maxSizeBytes: 5 * 1024 * 1024 },
+  'image/jpg': { category: 'tweet_image', maxSizeBytes: 5 * 1024 * 1024 },
+  'image/webp': { category: 'tweet_image', maxSizeBytes: 5 * 1024 * 1024 },
+  'image/gif': { category: 'tweet_gif', maxSizeBytes: 15 * 1024 * 1024 }, // 15MB for GIF
+  'video/mp4': { category: 'tweet_video', maxSizeBytes: 512 * 1024 * 1024 }, // 512MB for video
+};
+
 // Default API tier limits (basic tier)
 const DEFAULT_API_TIER_LIMITS: ApiTierLimits = {
   postsPerMonth: 1500,
@@ -1151,6 +1219,305 @@ export class XClient {
    */
   clearCache(): void {
     this.cache.clear();
+  }
+
+  // ============================================================================
+  // Media Operations
+  // ============================================================================
+
+  /**
+   * Validate a media file before upload.
+   */
+  validateMediaFile(mimeType: string, sizeBytes: number): MediaValidationResult {
+    if (sizeBytes === 0) {
+      return { valid: false, error: 'Media file is empty' };
+    }
+
+    const config = MEDIA_TYPE_CONFIG[mimeType];
+    if (!config) {
+      return { valid: false, error: `Unsupported media type: ${mimeType}` };
+    }
+
+    if (sizeBytes > config.maxSizeBytes) {
+      const maxSizeMB = Math.round(config.maxSizeBytes / (1024 * 1024));
+      return { valid: false, error: `File size exceeds maximum of ${maxSizeMB}MB for ${mimeType}` };
+    }
+
+    return { valid: true, category: config.category };
+  }
+
+  /**
+   * Upload media using the v1.1 chunked upload endpoint.
+   * Follows INIT -> APPEND (chunked) -> FINALIZE flow.
+   */
+  async uploadMedia(
+    data: Buffer,
+    mimeType: string,
+    category?: MediaCategory
+  ): Promise<MediaUploadResult> {
+    // Validate input
+    if (!data || data.length === 0) {
+      throw new Error('Media data is required');
+    }
+
+    const validation = this.validateMediaFile(mimeType, data.length);
+    if (!validation.valid) {
+      throw new Error(validation.error);
+    }
+
+    const mediaCategory = category ?? validation.category!;
+    const chunkSize = 1024 * 1024; // 1MB chunks
+
+    // INIT: Initialize the upload
+    const mediaId = await this.mediaUploadInit(data.length, mimeType, mediaCategory);
+
+    // APPEND: Upload chunks
+    let segmentIndex = 0;
+    for (let offset = 0; offset < data.length; offset += chunkSize) {
+      const chunk = data.subarray(offset, Math.min(offset + chunkSize, data.length));
+      await this.mediaUploadAppend(mediaId, chunk, segmentIndex);
+      segmentIndex++;
+    }
+
+    // FINALIZE: Complete the upload
+    const finalResult = await this.mediaUploadFinalize(mediaId);
+
+    return finalResult;
+  }
+
+  /**
+   * INIT command for chunked media upload.
+   */
+  private async mediaUploadInit(
+    totalBytes: number,
+    mimeType: string,
+    category: MediaCategory
+  ): Promise<string> {
+    const body = `command=INIT&total_bytes=${totalBytes}&media_type=${encodeURIComponent(mimeType)}&media_category=${category}`;
+
+    const response = await this.mediaRequest<{ media_id_string: string }>('POST', body);
+
+    return response.media_id_string;
+  }
+
+  /**
+   * APPEND command for chunked media upload.
+   */
+  private async mediaUploadAppend(
+    mediaId: string,
+    chunk: Buffer,
+    segmentIndex: number
+  ): Promise<void> {
+    const base64Chunk = chunk.toString('base64');
+    const body = `command=APPEND&media_id=${mediaId}&segment_index=${segmentIndex}&media_data=${encodeURIComponent(base64Chunk)}`;
+
+    await this.mediaRequest<null>('POST', body);
+  }
+
+  /**
+   * FINALIZE command for chunked media upload.
+   */
+  private async mediaUploadFinalize(mediaId: string): Promise<MediaUploadResult> {
+    const body = `command=FINALIZE&media_id=${mediaId}`;
+
+    interface FinalizeResponse {
+      media_id_string: string;
+      size?: number;
+      expires_after_secs?: number;
+      image?: { image_type: string; w: number; h: number };
+      video?: { video_type: string };
+      processing_info?: {
+        state: 'pending' | 'in_progress' | 'failed' | 'succeeded';
+        check_after_secs?: number;
+        progress_percent?: number;
+      };
+    }
+
+    const response = await this.mediaRequest<FinalizeResponse>('POST', body);
+
+    const result: MediaUploadResult = {
+      mediaId: response.media_id_string,
+      expiresAfterSecs: response.expires_after_secs,
+      size: response.size,
+    };
+
+    if (response.image) {
+      result.imageInfo = {
+        imageType: response.image.image_type,
+        width: response.image.w,
+        height: response.image.h,
+      };
+    }
+
+    if (response.video) {
+      result.videoInfo = {
+        videoType: response.video.video_type,
+      };
+    }
+
+    if (response.processing_info) {
+      result.processingInfo = {
+        state: response.processing_info.state,
+        checkAfterSecs: response.processing_info.check_after_secs,
+        progressPercent: response.processing_info.progress_percent,
+      };
+    }
+
+    return result;
+  }
+
+  /**
+   * Make a request to the media upload endpoint.
+   * Uses application/x-www-form-urlencoded content type.
+   */
+  private async mediaRequest<T>(method: 'POST' | 'GET', body?: string, params?: Record<string, string>): Promise<T> {
+    const startTime = Date.now();
+    const endpoint = '/1.1/media/upload.json';
+    const fullUrl = `https://upload.twitter.com${endpoint}`;
+
+    // Log request if callback provided
+    if (this.config.onRequest) {
+      this.config.onRequest({
+        method,
+        endpoint,
+        timestamp: new Date().toISOString(),
+        params,
+        hasBody: !!body,
+      });
+    }
+
+    // Generate OAuth header
+    const oauthHeader = this.generateOAuthHeader(method, fullUrl, params);
+
+    try {
+      let response;
+
+      const requestConfig = {
+        baseURL: 'https://upload.twitter.com',
+        headers: {
+          Authorization: oauthHeader,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        params,
+      };
+
+      if (method === 'POST') {
+        response = await this.axios.post(endpoint, body, requestConfig);
+      } else {
+        response = await this.axios.get(endpoint, requestConfig);
+      }
+
+      // Update rate limits from headers
+      if (response.headers) {
+        this.updateRateLimits(endpoint, response.headers as Record<string, string>);
+      }
+
+      // Log response if callback provided
+      if (this.config.onResponse) {
+        this.config.onResponse({
+          endpoint,
+          status: 'success',
+          rateLimitRemaining: this.rateLimits.get(endpoint)?.remaining,
+          timestamp: new Date().toISOString(),
+          durationMs: Date.now() - startTime,
+        });
+      }
+
+      return response.data as T;
+    } catch (error) {
+      // Log error response if callback provided
+      if (this.config.onResponse) {
+        this.config.onResponse({
+          endpoint,
+          status: 'error',
+          statusCode: (error as import('axios').AxiosError).response?.status,
+          timestamp: new Date().toISOString(),
+          durationMs: Date.now() - startTime,
+        });
+      }
+
+      throw this.handleError(error as import('axios').AxiosError, endpoint);
+    }
+  }
+
+  /**
+   * Check the processing status of uploaded media.
+   */
+  async checkMediaStatus(mediaId: string): Promise<MediaProcessingStatus> {
+    if (!mediaId) {
+      throw new Error('Media ID is required');
+    }
+
+    interface StatusResponse {
+      media_id_string: string;
+      processing_info: {
+        state: 'pending' | 'in_progress' | 'failed' | 'succeeded';
+        check_after_secs?: number;
+        progress_percent?: number;
+        error?: {
+          code: number;
+          name: string;
+          message: string;
+        };
+      };
+    }
+
+    const params = { command: 'STATUS', media_id: mediaId };
+    const response = await this.mediaRequest<StatusResponse>('GET', undefined, params);
+
+    return {
+      state: response.processing_info.state,
+      checkAfterSecs: response.processing_info.check_after_secs,
+      progressPercent: response.processing_info.progress_percent,
+      error: response.processing_info.error,
+    };
+  }
+
+  /**
+   * Wait for media processing to complete.
+   * Polls the status endpoint until processing succeeds, fails, or times out.
+   */
+  async waitForMediaProcessing(
+    mediaId: string,
+    options?: MediaProcessingOptions
+  ): Promise<MediaProcessingStatus> {
+    if (!mediaId) {
+      throw new Error('Media ID is required');
+    }
+
+    const maxWaitMs = options?.maxWaitMs ?? 60000; // Default 60 seconds
+    const pollIntervalMs = options?.pollIntervalMs ?? 1000; // Default 1 second
+
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < maxWaitMs) {
+      const status = await this.checkMediaStatus(mediaId);
+
+      if (status.state === 'succeeded') {
+        return status;
+      }
+
+      if (status.state === 'failed') {
+        const errorMsg = status.error?.message ?? 'Unknown error';
+        throw new Error(`Media processing failed: ${errorMsg}`);
+      }
+
+      // Wait before polling again
+      const waitTime = status.checkAfterSecs
+        ? Math.min(status.checkAfterSecs * 1000, pollIntervalMs)
+        : pollIntervalMs;
+
+      await this.sleep(waitTime);
+    }
+
+    throw new Error('Media processing timeout');
+  }
+
+  /**
+   * Sleep for a given number of milliseconds.
+   */
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
 

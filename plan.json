@@ -478,7 +478,7 @@
         "Add media validation before upload",
         "Return media IDs for attachment to tweets"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "api-006",

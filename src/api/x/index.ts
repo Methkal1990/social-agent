@@ -33,4 +33,9 @@ export {
   type UserData,
   type UsersListResponse,
   type UsersListOptions,
+  type MediaCategory,
+  type MediaUploadResult,
+  type MediaProcessingStatus,
+  type MediaProcessingOptions,
+  type MediaValidationResult,
 } from './client.js';
