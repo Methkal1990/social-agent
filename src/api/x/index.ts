@@ -26,4 +26,11 @@ export {
   type SearchOptions,
   type TrendingTopic,
   type TrendingResponse,
+  type LikeResult,
+  type RetweetResult,
+  type FollowResult,
+  type UnfollowResult,
+  type UserData,
+  type UsersListResponse,
+  type UsersListOptions,
 } from './client.js';

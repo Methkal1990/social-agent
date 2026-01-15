@@ -463,7 +463,7 @@
         "Implement getFollowers() method",
         "Implement getFollowing() method"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "api-005",

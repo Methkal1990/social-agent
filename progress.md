@@ -229,3 +229,14 @@
 - Added TrendingTopic, TrendingResponse types
 - Exported new types from src/api/x/index.ts
 - Added unit tests (35 new tests, 592 total)
+
+### api-004: X API engagement operations ✅
+- Implemented like() and unlike() methods for tweet likes
+- Implemented retweet() and unretweet() methods for retweets
+- Implemented follow() and unfollow() methods with pending_follow support
+- Implemented getFollowers() with pagination and user fields
+- Implemented getFollowing() with pagination and user fields
+- Added LikeResult, RetweetResult, FollowResult, UnfollowResult types
+- Added UserData, UsersListResponse, UsersListOptions types
+- Exported new types from src/api/x/index.ts
+- Added unit tests (48 new tests, 640 total)

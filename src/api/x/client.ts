@@ -194,6 +194,73 @@ export interface TrendingResponse {
   woeid: number;
 }
 
+/**
+ * Like operation result.
+ */
+export interface LikeResult {
+  liked: boolean;
+}
+
+/**
+ * Retweet operation result.
+ */
+export interface RetweetResult {
+  retweeted: boolean;
+}
+
+/**
+ * Follow operation result.
+ */
+export interface FollowResult {
+  following: boolean;
+  pending_follow: boolean;
+}
+
+/**
+ * Unfollow operation result.
+ */
+export interface UnfollowResult {
+  following: boolean;
+}
+
+/**
+ * User data from API.
+ */
+export interface UserData {
+  id: string;
+  name: string;
+  username: string;
+  description?: string;
+  created_at?: string;
+  verified?: boolean;
+  protected?: boolean;
+  public_metrics?: {
+    followers_count: number;
+    following_count: number;
+    tweet_count: number;
+    listed_count: number;
+  };
+  profile_image_url?: string;
+}
+
+/**
+ * Users list response with pagination.
+ */
+export interface UsersListResponse {
+  users: UserData[];
+  nextToken?: string;
+  hasMore: boolean;
+}
+
+/**
+ * Options for followers/following requests.
+ */
+export interface UsersListOptions {
+  maxResults?: number;
+  paginationToken?: string;
+  userFields?: string[];
+}
+
 // Default API tier limits (basic tier)
 const DEFAULT_API_TIER_LIMITS: ApiTierLimits = {
   postsPerMonth: 1500,
@@ -841,6 +908,211 @@ export class XClient {
       trends: data.trends,
       location: data.locations[0].name,
       woeid: data.locations[0].woeid,
+    };
+  }
+
+  // ============================================================================
+  // Engagement Operations
+  // ============================================================================
+
+  /**
+   * Like a tweet.
+   */
+  async like(userId: string, tweetId: string): Promise<LikeResult> {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+    if (!tweetId) {
+      throw new Error('Tweet ID is required');
+    }
+
+    const response = await this.request<{ data: LikeResult }>(
+      'POST',
+      `/2/users/${userId}/likes`,
+      { tweet_id: tweetId }
+    );
+
+    return response.data;
+  }
+
+  /**
+   * Unlike a tweet.
+   */
+  async unlike(userId: string, tweetId: string): Promise<LikeResult> {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+    if (!tweetId) {
+      throw new Error('Tweet ID is required');
+    }
+
+    const response = await this.request<{ data: LikeResult }>(
+      'DELETE',
+      `/2/users/${userId}/likes/${tweetId}`
+    );
+
+    return response.data;
+  }
+
+  /**
+   * Retweet a tweet.
+   */
+  async retweet(userId: string, tweetId: string): Promise<RetweetResult> {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+    if (!tweetId) {
+      throw new Error('Tweet ID is required');
+    }
+
+    const response = await this.request<{ data: RetweetResult }>(
+      'POST',
+      `/2/users/${userId}/retweets`,
+      { tweet_id: tweetId }
+    );
+
+    return response.data;
+  }
+
+  /**
+   * Unretweet a tweet.
+   */
+  async unretweet(userId: string, tweetId: string): Promise<RetweetResult> {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+    if (!tweetId) {
+      throw new Error('Tweet ID is required');
+    }
+
+    const response = await this.request<{ data: RetweetResult }>(
+      'DELETE',
+      `/2/users/${userId}/retweets/${tweetId}`
+    );
+
+    return response.data;
+  }
+
+  /**
+   * Follow a user.
+   */
+  async follow(sourceUserId: string, targetUserId: string): Promise<FollowResult> {
+    if (!sourceUserId) {
+      throw new Error('Source user ID is required');
+    }
+    if (!targetUserId) {
+      throw new Error('Target user ID is required');
+    }
+
+    const response = await this.request<{ data: FollowResult }>(
+      'POST',
+      `/2/users/${sourceUserId}/following`,
+      { target_user_id: targetUserId }
+    );
+
+    return response.data;
+  }
+
+  /**
+   * Unfollow a user.
+   */
+  async unfollow(sourceUserId: string, targetUserId: string): Promise<UnfollowResult> {
+    if (!sourceUserId) {
+      throw new Error('Source user ID is required');
+    }
+    if (!targetUserId) {
+      throw new Error('Target user ID is required');
+    }
+
+    const response = await this.request<{ data: UnfollowResult }>(
+      'DELETE',
+      `/2/users/${sourceUserId}/following/${targetUserId}`
+    );
+
+    return response.data;
+  }
+
+  /**
+   * Get a user's followers.
+   */
+  async getFollowers(userId: string, options?: UsersListOptions): Promise<UsersListResponse> {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+
+    const params: Record<string, string> = {
+      max_results: String(options?.maxResults ?? 100),
+    };
+
+    if (options?.paginationToken) {
+      params.pagination_token = options.paginationToken;
+    }
+
+    if (options?.userFields && options.userFields.length > 0) {
+      params['user.fields'] = options.userFields.join(',');
+    }
+
+    interface FollowersApiResponse {
+      data?: UserData[];
+      meta: {
+        result_count: number;
+        next_token?: string;
+      };
+    }
+
+    const response = await this.request<FollowersApiResponse>(
+      'GET',
+      `/2/users/${userId}/followers`,
+      undefined,
+      params
+    );
+
+    return {
+      users: response.data ?? [],
+      nextToken: response.meta.next_token,
+      hasMore: !!response.meta.next_token,
+    };
+  }
+
+  /**
+   * Get users that a user is following.
+   */
+  async getFollowing(userId: string, options?: UsersListOptions): Promise<UsersListResponse> {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+
+    const params: Record<string, string> = {
+      max_results: String(options?.maxResults ?? 100),
+    };
+
+    if (options?.paginationToken) {
+      params.pagination_token = options.paginationToken;
+    }
+
+    if (options?.userFields && options.userFields.length > 0) {
+      params['user.fields'] = options.userFields.join(',');
+    }
+
+    interface FollowingApiResponse {
+      data?: UserData[];
+      meta: {
+        result_count: number;
+        next_token?: string;
+      };
+    }
+
+    const response = await this.request<FollowingApiResponse>(
+      'GET',
+      `/2/users/${userId}/following`,
+      undefined,
+      params
+    );
+
+    return {
+      users: response.data ?? [],
+      nextToken: response.meta.next_token,
+      hasMore: !!response.meta.next_token,
     };
   }
 
