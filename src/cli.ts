@@ -1,25 +1,19 @@
-#!/usr/bin/env node
 /**
  * social-agent CLI entry point
  *
  * This file sets up the Commander.js program and loads all commands.
  */
 
-import { Command } from 'commander';
-import { VERSION } from './index.js';
+import { createProgram, setupGracefulShutdown, createColoredOutput } from './cli/index.js';
 
-const program = new Command();
+// Create and configure the CLI program
+const program = createProgram();
 
-program
-  .name('social-agent')
-  .description('AI-powered social media manager for X (Twitter)')
-  .version(VERSION);
+// Setup graceful shutdown handlers
+setupGracefulShutdown();
 
-// Global options
-program
-  .option('-v, --verbose', 'Enable verbose output')
-  .option('--sandbox', 'Use sandbox mode with test credentials')
-  .option('--config <path>', 'Path to config directory');
+// Create colored output utilities
+export const output = createColoredOutput();
 
 // Commands will be added as features are implemented
 // program.addCommand(dashboardCommand);
@@ -33,15 +27,6 @@ program
 // Default action - show help
 program.action(() => {
   program.help();
-});
-
-// Graceful shutdown handlers
-process.on('SIGINT', () => {
-  process.exit(0);
-});
-
-process.on('SIGTERM', () => {
-  process.exit(0);
 });
 
 program.parse();

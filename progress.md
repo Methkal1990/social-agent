@@ -181,3 +181,16 @@
 - Implemented getFollowBackRate() for analytics
 - Created getNetworkStorage() singleton, resetNetworkStorage()
 - Added unit tests (66 new tests, 475 total)
+
+### cli-001: CLI entry point and command structure ✅
+- Created src/cli/index.ts with CLI utilities
+- Created createProgram() singleton with Commander.js setup
+- Configured global options: --verbose, --sandbox, --config
+- Implemented version and help commands (from Commander defaults)
+- Created src/cli/ directory structure for command loading
+- Created createColoredOutput() utility with chalk (success, error, warn, info, dim)
+- Implemented setupGracefulShutdown() with SIGINT/SIGTERM handlers
+- Exported GlobalOptions type, resetCLI() for testing
+- Updated src/cli.ts to use new CLI module
+- Updated tsup.config.ts with banner for shebang
+- Added unit tests (26 new tests, 501 total)

@@ -14,4 +14,7 @@ export default defineConfig({
   treeshake: true,
   minify: false,
   external: ['fsevents'],
+  banner: {
+    js: '#!/usr/bin/env node',
+  },
 });

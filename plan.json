@@ -302,7 +302,7 @@
         "Add colored output utilities with chalk",
         "Implement graceful shutdown handlers"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "cli-002",
