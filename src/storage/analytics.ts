@@ -242,9 +242,7 @@ export class AnalyticsStorage {
 
     // Calculate engagement rate
     const engagementRate =
-      totalImpressions > 0
-        ? (totalLikes + totalRetweets + totalReplies) / totalImpressions
-        : 0;
+      totalImpressions > 0 ? (totalLikes + totalRetweets + totalReplies) / totalImpressions : 0;
 
     const aggregate: DailyAggregate = {
       posts: postsOnDate.length,

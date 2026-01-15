@@ -132,3 +132,21 @@
 - Implemented calculateDailyAggregate() for computing and storing daily stats
 - Created getAnalyticsStorage() singleton, resetAnalyticsStorage()
 - Added unit tests (32 new tests, 313 total)
+
+### storage-005: Learning data storage (learning.json) ✅
+- Defined postingTimePatternSchema with day, hour (0-23), score (0-1)
+- Defined topicPatternSchema with topic, avg_engagement
+- Defined contentInsightsSchema with threads_vs_single, optimal_length
+- Defined patternsSchema combining posting times, topics, insights
+- Defined abTestVariantSchema with pattern, engagement
+- Defined abTestSchema with id, name, status, winner, confidence, variants
+- Defined modelWeightsSchema as flexible key-value (0-1 weights)
+- Created LearningStorage class with caching and persistence to learning.json
+- Implemented updatePatterns() for partial pattern updates
+- Implemented createABTest() with auto UUID generation
+- Implemented recordABTestResult() with engagement averaging
+- Implemented completeABTest() to mark winner with confidence
+- Implemented getWinningVariants() for completed tests
+- Implemented updateModelWeights() with merge behavior
+- Created getLearningStorage() singleton, resetLearningStorage()
+- Added unit tests (48 new tests, 361 total)

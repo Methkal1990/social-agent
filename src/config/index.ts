@@ -52,12 +52,24 @@ const ConfidenceWeightsSchema = z.object({
 const AutonomyConfigSchema = z.object({
   tasks: z
     .object({
-      new_posts: AutonomyTaskSettingsSchema.default({ level: 'approval_required', confidence_threshold: 80 }),
-      thread_posts: AutonomyTaskSettingsSchema.default({ level: 'approval_required', confidence_threshold: 85 }),
+      new_posts: AutonomyTaskSettingsSchema.default({
+        level: 'approval_required',
+        confidence_threshold: 80,
+      }),
+      thread_posts: AutonomyTaskSettingsSchema.default({
+        level: 'approval_required',
+        confidence_threshold: 85,
+      }),
       replies: AutonomyTaskSettingsSchema.default({ level: 'auto' }),
-      quote_tweets: AutonomyTaskSettingsSchema.default({ level: 'confidence_based', confidence_threshold: 75 }),
+      quote_tweets: AutonomyTaskSettingsSchema.default({
+        level: 'confidence_based',
+        confidence_threshold: 75,
+      }),
       engagement: AutonomyTaskSettingsSchema.default({ level: 'auto' }),
-      network_building: AutonomyTaskSettingsSchema.default({ level: 'confidence_based', confidence_threshold: 70 }),
+      network_building: AutonomyTaskSettingsSchema.default({
+        level: 'confidence_based',
+        confidence_threshold: 70,
+      }),
     })
     .default({
       new_posts: { level: 'approval_required', confidence_threshold: 80 },

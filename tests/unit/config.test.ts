@@ -148,7 +148,11 @@ describe('ConfigLoader', () => {
       const loaded = loader.loadPersonaConfig();
 
       expect(loaded.niche.primary).toBe('Machine Learning');
-      expect(loaded.niche.secondary).toEqual(['Data Science', 'Software Engineering', 'Tech Industry']);
+      expect(loaded.niche.secondary).toEqual([
+        'Data Science',
+        'Software Engineering',
+        'Tech Industry',
+      ]);
       expect(loaded.niche.description).toBe(
         'Focus on practical ML applications and engineering best practices.'
       );
@@ -180,11 +184,7 @@ describe('ConfigLoader', () => {
             'share personal experiences',
             'ask engaging questions',
           ],
-          dont: [
-            'be overly formal',
-            'use excessive jargon',
-            'engage in political debates',
-          ],
+          dont: ['be overly formal', 'use excessive jargon', 'engage in political debates'],
         },
       };
       fs.writeFileSync(path.join(testConfigDir, 'persona.yaml'), yaml.stringify(personaConfig));
@@ -228,7 +228,11 @@ describe('ConfigLoader', () => {
       const loaded = loader.loadPersonaConfig();
 
       expect(loaded.ab_testing.enabled).toBe(true);
-      expect(loaded.ab_testing.test_elements).toEqual(['hook_styles', 'post_lengths', 'question_types']);
+      expect(loaded.ab_testing.test_elements).toEqual([
+        'hook_styles',
+        'post_lengths',
+        'question_types',
+      ]);
     });
 
     it('should provide empty defaults for all array fields', () => {
@@ -580,7 +584,10 @@ describe('ConfigLoader', () => {
           min_buffer: 5,
         },
       };
-      fs.writeFileSync(path.join(testConfigDir, 'schedule.yaml'), yaml.stringify(fullScheduleConfig));
+      fs.writeFileSync(
+        path.join(testConfigDir, 'schedule.yaml'),
+        yaml.stringify(fullScheduleConfig)
+      );
 
       const loader = new ConfigLoader(testConfigDir);
       const loaded = loader.loadScheduleConfig();
@@ -665,7 +672,12 @@ describe('ConfigLoader', () => {
     it('should load topic rules with engage topics', () => {
       const moderationConfig = {
         topics: {
-          engage: ['AI ethics', 'tech industry trends', 'productivity tips', 'software engineering'],
+          engage: [
+            'AI ethics',
+            'tech industry trends',
+            'productivity tips',
+            'software engineering',
+          ],
         },
       };
       fs.writeFileSync(
@@ -827,10 +839,7 @@ describe('ConfigLoader', () => {
 
     it('should throw ConfigError for invalid version type', () => {
       const invalidConfig = { version: 'not a number' };
-      fs.writeFileSync(
-        path.join(testConfigDir, 'moderation.yaml'),
-        yaml.stringify(invalidConfig)
-      );
+      fs.writeFileSync(path.join(testConfigDir, 'moderation.yaml'), yaml.stringify(invalidConfig));
 
       const loader = new ConfigLoader(testConfigDir);
       expect(() => loader.loadModerationConfig()).toThrow();
@@ -842,10 +851,7 @@ describe('ConfigLoader', () => {
           enabled: 'yes', // Should be boolean
         },
       };
-      fs.writeFileSync(
-        path.join(testConfigDir, 'moderation.yaml'),
-        yaml.stringify(invalidConfig)
-      );
+      fs.writeFileSync(path.join(testConfigDir, 'moderation.yaml'), yaml.stringify(invalidConfig));
 
       const loader = new ConfigLoader(testConfigDir);
       expect(() => loader.loadModerationConfig()).toThrow();
@@ -857,10 +863,7 @@ describe('ConfigLoader', () => {
           words: 'not an array',
         },
       };
-      fs.writeFileSync(
-        path.join(testConfigDir, 'moderation.yaml'),
-        yaml.stringify(invalidConfig)
-      );
+      fs.writeFileSync(path.join(testConfigDir, 'moderation.yaml'), yaml.stringify(invalidConfig));
 
       const loader = new ConfigLoader(testConfigDir);
       expect(() => loader.loadModerationConfig()).toThrow();
@@ -1162,7 +1165,9 @@ describe('ConfigLoader', () => {
       const loaded = loader.loadModelsConfig();
 
       expect(loaded.image_generation.enabled).toBe(true);
-      expect(loaded.image_generation.style_prompt).toBe('modern, clean, professional, tech-focused');
+      expect(loaded.image_generation.style_prompt).toBe(
+        'modern, clean, professional, tech-focused'
+      );
       expect(loaded.image_generation.prompt_template).toBe('Create an image for: {topic}');
     });
 
@@ -1225,7 +1230,9 @@ describe('ConfigLoader', () => {
       expect(loaded.models.moderation.model).toBe('anthropic/claude-3-haiku');
       expect(loaded.models.image_generation?.model).toBe('openai/dall-e-3');
       expect(loaded.image_generation.enabled).toBe(true);
-      expect(loaded.image_generation.style_prompt).toBe('modern, clean, professional, tech-focused');
+      expect(loaded.image_generation.style_prompt).toBe(
+        'modern, clean, professional, tech-focused'
+      );
     });
 
     it('should throw ConfigError for invalid version type', () => {

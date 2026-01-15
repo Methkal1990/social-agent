@@ -460,7 +460,13 @@ describe('AnalyticsStorage', () => {
         queue_id: null,
         content: 'Jan 13 content',
         posted_at: '2024-01-13T10:00:00Z',
-        metrics: { likes: 10, retweets: 5, replies: 2, impressions: 500, collected_at: '2024-01-14T10:00:00Z' },
+        metrics: {
+          likes: 10,
+          retweets: 5,
+          replies: 2,
+          impressions: 500,
+          collected_at: '2024-01-14T10:00:00Z',
+        },
         performance_score: 0.5,
         metadata: {},
       });
@@ -470,7 +476,13 @@ describe('AnalyticsStorage', () => {
         queue_id: null,
         content: 'Jan 14 content',
         posted_at: '2024-01-14T10:00:00Z',
-        metrics: { likes: 20, retweets: 10, replies: 5, impressions: 1000, collected_at: '2024-01-15T10:00:00Z' },
+        metrics: {
+          likes: 20,
+          retweets: 10,
+          replies: 5,
+          impressions: 1000,
+          collected_at: '2024-01-15T10:00:00Z',
+        },
         performance_score: 0.6,
         metadata: {},
       });
@@ -480,7 +492,13 @@ describe('AnalyticsStorage', () => {
         queue_id: null,
         content: 'Jan 15 content',
         posted_at: '2024-01-15T10:00:00Z',
-        metrics: { likes: 30, retweets: 15, replies: 8, impressions: 1500, collected_at: '2024-01-16T10:00:00Z' },
+        metrics: {
+          likes: 30,
+          retweets: 15,
+          replies: 8,
+          impressions: 1500,
+          collected_at: '2024-01-16T10:00:00Z',
+        },
         performance_score: 0.7,
         metadata: {},
       });
@@ -490,7 +508,13 @@ describe('AnalyticsStorage', () => {
         queue_id: null,
         content: 'Jan 16 content',
         posted_at: '2024-01-16T10:00:00Z',
-        metrics: { likes: 40, retweets: 20, replies: 10, impressions: 2000, collected_at: '2024-01-17T10:00:00Z' },
+        metrics: {
+          likes: 40,
+          retweets: 20,
+          replies: 10,
+          impressions: 2000,
+          collected_at: '2024-01-17T10:00:00Z',
+        },
         performance_score: 0.8,
         metadata: {},
       });
@@ -503,8 +527,8 @@ describe('AnalyticsStorage', () => {
       );
 
       expect(posts).toHaveLength(2);
-      expect(posts.map(p => p.id)).toContain('tweet-jan-14');
-      expect(posts.map(p => p.id)).toContain('tweet-jan-15');
+      expect(posts.map((p) => p.id)).toContain('tweet-jan-14');
+      expect(posts.map((p) => p.id)).toContain('tweet-jan-15');
     });
 
     it('should return empty array for range with no posts', async () => {
@@ -535,7 +559,13 @@ describe('AnalyticsStorage', () => {
         queue_id: null,
         content: 'Post 1',
         posted_at: '2024-01-14T10:00:00Z',
-        metrics: { likes: 100, retweets: 20, replies: 10, impressions: 2000, collected_at: '2024-01-15T10:00:00Z' },
+        metrics: {
+          likes: 100,
+          retweets: 20,
+          replies: 10,
+          impressions: 2000,
+          collected_at: '2024-01-15T10:00:00Z',
+        },
         performance_score: 0.7,
         metadata: {},
       });
@@ -545,7 +575,13 @@ describe('AnalyticsStorage', () => {
         queue_id: null,
         content: 'Post 2',
         posted_at: '2024-01-14T14:00:00Z',
-        metrics: { likes: 150, retweets: 30, replies: 15, impressions: 3000, collected_at: '2024-01-15T10:00:00Z' },
+        metrics: {
+          likes: 150,
+          retweets: 30,
+          replies: 15,
+          impressions: 3000,
+          collected_at: '2024-01-15T10:00:00Z',
+        },
         performance_score: 0.8,
         metadata: {},
       });
@@ -555,7 +591,13 @@ describe('AnalyticsStorage', () => {
         queue_id: null,
         content: 'Post 3',
         posted_at: '2024-01-14T18:00:00Z',
-        metrics: { likes: 50, retweets: 10, replies: 5, impressions: 1000, collected_at: '2024-01-15T10:00:00Z' },
+        metrics: {
+          likes: 50,
+          retweets: 10,
+          replies: 5,
+          impressions: 1000,
+          collected_at: '2024-01-15T10:00:00Z',
+        },
         performance_score: 0.5,
         metadata: {},
       });
@@ -626,7 +668,13 @@ describe('AnalyticsStorage', () => {
         queue_id: null,
         content: 'Test',
         posted_at: '2024-01-14T14:00:00Z',
-        metrics: { likes: 10, retweets: 5, replies: 2, impressions: 500, collected_at: '2024-01-15T10:00:00Z' },
+        metrics: {
+          likes: 10,
+          retweets: 5,
+          replies: 2,
+          impressions: 500,
+          collected_at: '2024-01-15T10:00:00Z',
+        },
         performance_score: 0.5,
         metadata: {},
       });
@@ -641,7 +689,13 @@ describe('AnalyticsStorage', () => {
         queue_id: null,
         content: 'Test',
         posted_at: '2024-01-14T14:00:00Z',
-        metrics: { likes: 10, retweets: 5, replies: 2, impressions: 500, collected_at: '2024-01-15T10:00:00Z' },
+        metrics: {
+          likes: 10,
+          retweets: 5,
+          replies: 2,
+          impressions: 500,
+          collected_at: '2024-01-15T10:00:00Z',
+        },
         performance_score: 0.5,
         metadata: {},
       });

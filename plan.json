@@ -228,7 +228,7 @@
         "Implement getWinningVariants function",
         "Implement updateModelWeights function"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "storage-006",

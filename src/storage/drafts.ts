@@ -9,7 +9,12 @@ import { z } from 'zod';
 import { randomUUID } from 'crypto';
 
 import { Storage, getStorage } from '@/storage/index.js';
-import { QueueStorage, getQueueStorage, type QueueItemStatus, type QueueItemSource } from '@/storage/queue.js';
+import {
+  QueueStorage,
+  getQueueStorage,
+  type QueueItemStatus,
+  type QueueItemSource,
+} from '@/storage/queue.js';
 
 /**
  * Draft item type values.
@@ -218,9 +223,7 @@ export class DraftsStorage {
     }
 
     // Get queue storage (use same dataDir if specified)
-    const queueStorage = this.dataDir
-      ? new QueueStorage(this.dataDir)
-      : getQueueStorage();
+    const queueStorage = this.dataDir ? new QueueStorage(this.dataDir) : getQueueStorage();
 
     // Create queue item from draft
     const queueItem = await queueStorage.addToQueue({
