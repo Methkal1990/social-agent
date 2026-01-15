@@ -120,6 +120,177 @@ describe('ConfigLoader', () => {
       expect(config.version).toBe(1);
       expect(config.identity.name).toBe('');
     });
+
+    it('should load identity section with name and role', () => {
+      const personaConfig = {
+        identity: { name: 'Alex Smith', role: 'AI Researcher & Writer' },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'persona.yaml'), yaml.stringify(personaConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadPersonaConfig();
+
+      expect(loaded.identity.name).toBe('Alex Smith');
+      expect(loaded.identity.role).toBe('AI Researcher & Writer');
+    });
+
+    it('should load niche configuration with primary, secondary, and description', () => {
+      const personaConfig = {
+        niche: {
+          primary: 'Machine Learning',
+          secondary: ['Data Science', 'Software Engineering', 'Tech Industry'],
+          description: 'Focus on practical ML applications and engineering best practices.',
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'persona.yaml'), yaml.stringify(personaConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadPersonaConfig();
+
+      expect(loaded.niche.primary).toBe('Machine Learning');
+      expect(loaded.niche.secondary).toEqual(['Data Science', 'Software Engineering', 'Tech Industry']);
+      expect(loaded.niche.description).toBe(
+        'Focus on practical ML applications and engineering best practices.'
+      );
+    });
+
+    it('should load voice characteristics (tone, style, personality)', () => {
+      const personaConfig = {
+        voice: {
+          tone: 'professional but approachable',
+          style: 'educational, insightful',
+          personality: ['curious', 'helpful', 'thought-provoking'],
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'persona.yaml'), yaml.stringify(personaConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadPersonaConfig();
+
+      expect(loaded.voice.tone).toBe('professional but approachable');
+      expect(loaded.voice.style).toBe('educational, insightful');
+      expect(loaded.voice.personality).toEqual(['curious', 'helpful', 'thought-provoking']);
+    });
+
+    it('should load content rules (do/dont lists)', () => {
+      const personaConfig = {
+        rules: {
+          do: [
+            'use analogies to explain complex topics',
+            'share personal experiences',
+            'ask engaging questions',
+          ],
+          dont: [
+            'be overly formal',
+            'use excessive jargon',
+            'engage in political debates',
+          ],
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'persona.yaml'), yaml.stringify(personaConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadPersonaConfig();
+
+      expect(loaded.rules.do).toHaveLength(3);
+      expect(loaded.rules.do).toContain('use analogies to explain complex topics');
+      expect(loaded.rules.dont).toHaveLength(3);
+      expect(loaded.rules.dont).toContain('engage in political debates');
+    });
+
+    it('should load example posts for style learning', () => {
+      const personaConfig = {
+        examples: [
+          "The best way to learn AI isn't watching tutorials. It's building something.",
+          '3 things I wish I knew when starting with ML...',
+          'Unpopular opinion: The best productivity tool is knowing when to stop optimizing.',
+        ],
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'persona.yaml'), yaml.stringify(personaConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadPersonaConfig();
+
+      expect(loaded.examples).toHaveLength(3);
+      expect(loaded.examples[0]).toContain('learn AI');
+    });
+
+    it('should load A/B testing variation config', () => {
+      const personaConfig = {
+        ab_testing: {
+          enabled: true,
+          test_elements: ['hook_styles', 'post_lengths', 'question_types'],
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'persona.yaml'), yaml.stringify(personaConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadPersonaConfig();
+
+      expect(loaded.ab_testing.enabled).toBe(true);
+      expect(loaded.ab_testing.test_elements).toEqual(['hook_styles', 'post_lengths', 'question_types']);
+    });
+
+    it('should provide empty defaults for all array fields', () => {
+      const loader = new ConfigLoader(testConfigDir);
+      const config = loader.loadPersonaConfig();
+
+      expect(config.niche.secondary).toEqual([]);
+      expect(config.voice.personality).toEqual([]);
+      expect(config.rules.do).toEqual([]);
+      expect(config.rules.dont).toEqual([]);
+      expect(config.examples).toEqual([]);
+      expect(config.ab_testing.test_elements).toEqual([]);
+    });
+
+    it('should throw ConfigError for invalid persona.yaml', () => {
+      const invalidConfig = { version: 'not a number' };
+      fs.writeFileSync(path.join(testConfigDir, 'persona.yaml'), yaml.stringify(invalidConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      expect(() => loader.loadPersonaConfig()).toThrow();
+    });
+
+    it('should load complete persona config matching spec example', () => {
+      const fullPersonaConfig = {
+        version: 1,
+        identity: {
+          name: 'Your Name',
+          role: 'Software Engineer & AI Enthusiast',
+        },
+        niche: {
+          primary: 'AI and Machine Learning',
+          secondary: ['Software Engineering', 'Productivity', 'Tech Industry'],
+          description: 'Focus on practical AI applications and productivity optimization.',
+        },
+        voice: {
+          tone: 'professional but approachable',
+          style: 'educational, insightful',
+          personality: ['curious and always learning', 'shares knowledge generously'],
+        },
+        rules: {
+          do: ['use analogies', 'share experiences', 'ask questions'],
+          dont: ['be corporate', 'use jargon', 'be negative'],
+        },
+        examples: ['Example tweet 1', 'Example tweet 2', 'Example tweet 3'],
+        ab_testing: {
+          enabled: true,
+          test_elements: ['hook_styles', 'post_lengths'],
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'persona.yaml'), yaml.stringify(fullPersonaConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadPersonaConfig();
+
+      expect(loaded.version).toBe(1);
+      expect(loaded.identity.name).toBe('Your Name');
+      expect(loaded.niche.primary).toBe('AI and Machine Learning');
+      expect(loaded.voice.tone).toBe('professional but approachable');
+      expect(loaded.rules.do).toContain('use analogies');
+      expect(loaded.examples).toHaveLength(3);
+      expect(loaded.ab_testing.enabled).toBe(true);
+    });
   });
 
   describe('loadScheduleConfig', () => {

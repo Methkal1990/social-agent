@@ -94,7 +94,7 @@
         "Implement example posts storage",
         "Implement A/B testing variation config"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "config-004",
