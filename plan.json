@@ -492,7 +492,7 @@
         "Cache user data to reduce API calls",
         "Extract user metrics (followers, following)"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "agent-001",

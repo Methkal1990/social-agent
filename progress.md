@@ -251,3 +251,14 @@
 - Added MediaCategory, MediaUploadResult, MediaProcessingStatus, MediaValidationResult types
 - Exported new types from src/api/x/index.ts
 - Added unit tests (34 new tests, 674 total)
+
+### api-006: X API user operations ✅
+- Implemented getMe() for authenticated user info with caching
+- Implemented getUser() for user lookup by ID with caching
+- Implemented getUserByUsername() for username lookup with caching
+- Implemented getUsers() for batch user lookup (max 100 IDs)
+- Cache user data to reduce API calls (cross-referenced by ID and username)
+- Extract user metrics (followers_count, following_count, tweet_count, listed_count)
+- Added GetUserOptions type for user query options
+- Exported new types from src/api/x/index.ts
+- Added unit tests (34 new tests, 708 total)

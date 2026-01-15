@@ -262,6 +262,14 @@ export interface UsersListOptions {
 }
 
 /**
+ * Options for getting a single user.
+ */
+export interface GetUserOptions {
+  userFields?: string[];
+  skipCache?: boolean;
+}
+
+/**
  * Media category for upload.
  */
 export type MediaCategory = 'tweet_image' | 'tweet_gif' | 'tweet_video';
@@ -1182,6 +1190,174 @@ export class XClient {
       nextToken: response.meta.next_token,
       hasMore: !!response.meta.next_token,
     };
+  }
+
+  // ============================================================================
+  // User Operations
+  // ============================================================================
+
+  /**
+   * Get the authenticated user's information.
+   */
+  async getMe(options?: GetUserOptions): Promise<UserData> {
+    // Check cache unless skipCache is specified
+    const cacheKey = 'user:me';
+    if (!options?.skipCache) {
+      const cached = this.getFromCache<UserData>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+
+    const params: Record<string, string> = {};
+
+    if (options?.userFields && options.userFields.length > 0) {
+      params['user.fields'] = options.userFields.join(',');
+    }
+
+    interface UserApiResponse {
+      data: UserData;
+    }
+
+    const response = await this.request<UserApiResponse>(
+      'GET',
+      '/2/users/me',
+      undefined,
+      Object.keys(params).length > 0 ? params : undefined
+    );
+
+    // Cache the result (both as 'me' and by ID)
+    this.setCache(cacheKey, response.data);
+    this.setCache(`user:${response.data.id}`, response.data);
+    this.setCache(`user:username:${response.data.username}`, response.data);
+
+    return response.data;
+  }
+
+  /**
+   * Get a user by their ID.
+   */
+  async getUser(userId: string, options?: GetUserOptions): Promise<UserData> {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+
+    // Check cache unless skipCache is specified
+    const cacheKey = `user:${userId}`;
+    if (!options?.skipCache) {
+      const cached = this.getFromCache<UserData>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+
+    const params: Record<string, string> = {};
+
+    if (options?.userFields && options.userFields.length > 0) {
+      params['user.fields'] = options.userFields.join(',');
+    }
+
+    interface UserApiResponse {
+      data: UserData;
+    }
+
+    const response = await this.request<UserApiResponse>(
+      'GET',
+      `/2/users/${userId}`,
+      undefined,
+      Object.keys(params).length > 0 ? params : undefined
+    );
+
+    // Cache the result (by ID and username)
+    this.setCache(cacheKey, response.data);
+    this.setCache(`user:username:${response.data.username}`, response.data);
+
+    return response.data;
+  }
+
+  /**
+   * Get a user by their username.
+   */
+  async getUserByUsername(username: string, options?: GetUserOptions): Promise<UserData> {
+    if (!username) {
+      throw new Error('Username is required');
+    }
+
+    // Check cache unless skipCache is specified
+    const cacheKey = `user:username:${username}`;
+    if (!options?.skipCache) {
+      const cached = this.getFromCache<UserData>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+
+    const params: Record<string, string> = {};
+
+    if (options?.userFields && options.userFields.length > 0) {
+      params['user.fields'] = options.userFields.join(',');
+    }
+
+    interface UserApiResponse {
+      data: UserData;
+    }
+
+    const response = await this.request<UserApiResponse>(
+      'GET',
+      `/2/users/by/username/${username}`,
+      undefined,
+      Object.keys(params).length > 0 ? params : undefined
+    );
+
+    // Cache the result (by ID and username)
+    this.setCache(`user:${response.data.id}`, response.data);
+    this.setCache(cacheKey, response.data);
+
+    return response.data;
+  }
+
+  /**
+   * Get multiple users by their IDs (batch lookup).
+   * Maximum 100 user IDs per request.
+   */
+  async getUsers(userIds: string[], options?: Omit<GetUserOptions, 'skipCache'>): Promise<UserData[]> {
+    if (!userIds || userIds.length === 0) {
+      throw new Error('At least one user ID is required');
+    }
+
+    if (userIds.length > 100) {
+      throw new Error('Maximum 100 user IDs allowed per request');
+    }
+
+    const params: Record<string, string> = {
+      ids: userIds.join(','),
+    };
+
+    if (options?.userFields && options.userFields.length > 0) {
+      params['user.fields'] = options.userFields.join(',');
+    }
+
+    interface UsersApiResponse {
+      data?: UserData[];
+      errors?: Array<{ resource_id: string; detail: string }>;
+    }
+
+    const response = await this.request<UsersApiResponse>(
+      'GET',
+      '/2/users',
+      undefined,
+      params
+    );
+
+    const users = response.data ?? [];
+
+    // Cache each user individually
+    for (const user of users) {
+      this.setCache(`user:${user.id}`, user);
+      this.setCache(`user:username:${user.username}`, user);
+    }
+
+    return users;
   }
 
   // ============================================================================
