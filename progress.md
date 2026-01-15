@@ -40,3 +40,13 @@
 - Created getConfig() singleton, resetConfig(), ensureConfigDir() utilities
 - Exported all config types (MainConfig, PersonaConfig, etc.)
 - Added unit tests (31 tests passing, 110 total)
+
+### storage-001: File-based storage layer foundation ✅
+- Created Storage class in src/storage/index.ts
+- Created StorageError class extending AppError with file path context
+- Implemented safeWrite() with atomic temp-file-then-rename pattern
+- Implemented safeRead() with null for missing files, StorageError for corruption
+- Implemented loadWithRecovery() with automatic backup of corrupted files
+- Added file locking via acquireLock() with timeout support
+- Created getStorage() singleton, resetStorage(), getDataDir(), ensureDataDir()
+- Added unit tests (35 tests passing, 145 total)
