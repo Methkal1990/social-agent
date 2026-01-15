@@ -150,3 +150,17 @@
 - Implemented updateModelWeights() with merge behavior
 - Created getLearningStorage() singleton, resetLearningStorage()
 - Added unit tests (48 new tests, 361 total)
+
+### storage-006: Content graph storage (content-graph.json) ✅
+- Defined contentNodeSchema with id, content_hash, content, semantic_vector, topics, posted_at
+- Defined contentGraphDataSchema with version, updated_at, posts, similarity_threshold (default 0.75)
+- Created ContentGraphStorage class with caching and persistence to content-graph.json
+- Implemented addContentNode() with auto UUID and hash generation
+- Implemented getContentNode() and findByContentHash() for lookups
+- Implemented findSimilarContent() with cosine similarity and threshold filtering
+- Implemented checkDuplicate() for exact match and semantic similarity detection
+- Implemented generateContentHash() with SHA-256 and whitespace normalization
+- Implemented generateSemanticVector() basic letter-frequency implementation
+- Implemented setSimilarityThreshold(), removeContentNode(), getAllNodes(), getNodesByTopic()
+- Created getContentGraphStorage() singleton, resetContentGraphStorage()
+- Added unit tests (48 new tests, 409 total)
