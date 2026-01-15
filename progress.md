@@ -216,3 +216,16 @@
 - Added PostOptions, Tweet, ThreadResult, DeleteResult types
 - Exported new types from src/api/x/index.ts
 - Added unit tests (25 new tests, 557 total)
+
+### api-003: X API reading operations ✅
+- Implemented getTimeline() for user timeline with pagination support
+- Implemented getMentions() for user mentions with since_id filtering
+- Implemented getTweet() for single tweet lookup with caching
+- Implemented searchTweets() for recent tweet search with sort_order
+- Implemented getTrending() for trending topics (v1.1 API)
+- Added pagination support (nextToken, hasMore) for all list endpoints
+- Implemented response caching with TTL for read operations
+- Added TweetData, TimelineResponse, TimelineOptions, GetTweetOptions, SearchOptions types
+- Added TrendingTopic, TrendingResponse types
+- Exported new types from src/api/x/index.ts
+- Added unit tests (35 new tests, 592 total)

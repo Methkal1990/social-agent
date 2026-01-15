@@ -117,6 +117,83 @@ export interface DeleteResult {
   deleted: boolean;
 }
 
+/**
+ * Extended tweet data with optional fields.
+ */
+export interface TweetData {
+  id: string;
+  text: string;
+  author_id?: string;
+  created_at?: string;
+  public_metrics?: {
+    retweet_count: number;
+    reply_count: number;
+    like_count: number;
+    quote_count: number;
+    impression_count?: number;
+  };
+  conversation_id?: string;
+  in_reply_to_user_id?: string;
+  referenced_tweets?: Array<{ type: string; id: string }>;
+}
+
+/**
+ * Timeline/list response with pagination.
+ */
+export interface TimelineResponse {
+  tweets: TweetData[];
+  nextToken?: string;
+  hasMore: boolean;
+}
+
+/**
+ * Options for timeline requests.
+ */
+export interface TimelineOptions {
+  maxResults?: number;
+  paginationToken?: string;
+  sinceId?: string;
+  tweetFields?: string[];
+  expansions?: string[];
+}
+
+/**
+ * Options for getting a single tweet.
+ */
+export interface GetTweetOptions {
+  tweetFields?: string[];
+  expansions?: string[];
+  skipCache?: boolean;
+}
+
+/**
+ * Options for searching tweets.
+ */
+export interface SearchOptions {
+  maxResults?: number;
+  paginationToken?: string;
+  tweetFields?: string[];
+  sortOrder?: 'recency' | 'relevancy';
+}
+
+/**
+ * Trending topic data.
+ */
+export interface TrendingTopic {
+  name: string;
+  tweet_volume: number | null;
+  url: string;
+}
+
+/**
+ * Trending topics response.
+ */
+export interface TrendingResponse {
+  trends: TrendingTopic[];
+  location: string;
+  woeid: number;
+}
+
 // Default API tier limits (basic tier)
 const DEFAULT_API_TIER_LIMITS: ApiTierLimits = {
   postsPerMonth: 1500,
@@ -134,6 +211,8 @@ export class XClient {
   private readonly rateLimits: Map<string, RateLimitInfo> = new Map();
   private readonly apiTierLimits: ApiTierLimits;
   private usageStats: UsageStats;
+  private readonly cache: Map<string, { data: unknown; timestamp: number }> = new Map();
+  private readonly cacheTTL: number = 60000; // 1 minute cache TTL
 
   constructor(config: XClientConfig) {
     this.config = config;
@@ -552,6 +631,254 @@ export class XClient {
 
     const response = await this.request<{ data: { deleted: boolean } }>('DELETE', `/2/tweets/${tweetId}`);
     return response.data;
+  }
+
+  // ============================================================================
+  // Reading Operations
+  // ============================================================================
+
+  /**
+   * Get user timeline (reverse chronological).
+   */
+  async getTimeline(userId: string, options?: TimelineOptions): Promise<TimelineResponse> {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+
+    const params: Record<string, string> = {
+      max_results: String(options?.maxResults ?? 10),
+    };
+
+    if (options?.paginationToken) {
+      params.pagination_token = options.paginationToken;
+    }
+
+    if (options?.sinceId) {
+      params.since_id = options.sinceId;
+    }
+
+    if (options?.tweetFields && options.tweetFields.length > 0) {
+      params['tweet.fields'] = options.tweetFields.join(',');
+    }
+
+    if (options?.expansions && options.expansions.length > 0) {
+      params.expansions = options.expansions.join(',');
+    }
+
+    interface TimelineApiResponse {
+      data?: TweetData[];
+      meta: {
+        result_count: number;
+        next_token?: string;
+      };
+    }
+
+    const response = await this.request<TimelineApiResponse>('GET', `/2/users/${userId}/tweets`, undefined, params);
+
+    return {
+      tweets: response.data ?? [],
+      nextToken: response.meta.next_token,
+      hasMore: !!response.meta.next_token,
+    };
+  }
+
+  /**
+   * Get mentions for a user.
+   */
+  async getMentions(userId: string, options?: TimelineOptions): Promise<TimelineResponse> {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+
+    const params: Record<string, string> = {
+      max_results: String(options?.maxResults ?? 10),
+    };
+
+    if (options?.paginationToken) {
+      params.pagination_token = options.paginationToken;
+    }
+
+    if (options?.sinceId) {
+      params.since_id = options.sinceId;
+    }
+
+    if (options?.tweetFields && options.tweetFields.length > 0) {
+      params['tweet.fields'] = options.tweetFields.join(',');
+    }
+
+    if (options?.expansions && options.expansions.length > 0) {
+      params.expansions = options.expansions.join(',');
+    }
+
+    interface MentionsApiResponse {
+      data?: TweetData[];
+      meta: {
+        result_count: number;
+        next_token?: string;
+      };
+    }
+
+    const response = await this.request<MentionsApiResponse>('GET', `/2/users/${userId}/mentions`, undefined, params);
+
+    return {
+      tweets: response.data ?? [],
+      nextToken: response.meta.next_token,
+      hasMore: !!response.meta.next_token,
+    };
+  }
+
+  /**
+   * Get a single tweet by ID.
+   */
+  async getTweet(tweetId: string, options?: GetTweetOptions): Promise<TweetData> {
+    if (!tweetId) {
+      throw new Error('Tweet ID is required');
+    }
+
+    // Check cache unless skipCache is specified
+    const cacheKey = `tweet:${tweetId}`;
+    if (!options?.skipCache) {
+      const cached = this.getFromCache<TweetData>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+
+    const params: Record<string, string> = {};
+
+    if (options?.tweetFields && options.tweetFields.length > 0) {
+      params['tweet.fields'] = options.tweetFields.join(',');
+    }
+
+    if (options?.expansions && options.expansions.length > 0) {
+      params.expansions = options.expansions.join(',');
+    }
+
+    interface TweetApiResponse {
+      data: TweetData;
+      includes?: {
+        users?: Array<{ id: string; name: string; username: string }>;
+      };
+    }
+
+    const response = await this.request<TweetApiResponse>(
+      'GET',
+      `/2/tweets/${tweetId}`,
+      undefined,
+      Object.keys(params).length > 0 ? params : undefined
+    );
+
+    // Cache the result
+    this.setCache(cacheKey, response.data);
+
+    return response.data;
+  }
+
+  /**
+   * Search recent tweets.
+   */
+  async searchTweets(query: string, options?: SearchOptions): Promise<TimelineResponse> {
+    if (!query) {
+      throw new Error('Search query is required');
+    }
+
+    const params: Record<string, string> = {
+      query,
+    };
+
+    if (options?.maxResults) {
+      params.max_results = String(options.maxResults);
+    }
+
+    if (options?.paginationToken) {
+      params.next_token = options.paginationToken;
+    }
+
+    if (options?.tweetFields && options.tweetFields.length > 0) {
+      params['tweet.fields'] = options.tweetFields.join(',');
+    }
+
+    if (options?.sortOrder) {
+      params.sort_order = options.sortOrder;
+    }
+
+    interface SearchApiResponse {
+      data?: TweetData[];
+      meta: {
+        result_count: number;
+        next_token?: string;
+      };
+    }
+
+    const response = await this.request<SearchApiResponse>('GET', '/2/tweets/search/recent', undefined, params);
+
+    return {
+      tweets: response.data ?? [],
+      nextToken: response.meta.next_token,
+      hasMore: !!response.meta.next_token,
+    };
+  }
+
+  /**
+   * Get trending topics for a location.
+   * Uses v1.1 API as v2 doesn't have trends endpoint.
+   * @param woeid - Where On Earth ID (default: 1 for worldwide)
+   */
+  async getTrending(woeid = 1): Promise<TrendingResponse> {
+    const params: Record<string, string> = {
+      id: String(woeid),
+    };
+
+    interface TrendsApiResponse {
+      trends: TrendingTopic[];
+      locations: Array<{ name: string; woeid: number }>;
+    }
+
+    const response = await this.request<TrendsApiResponse[]>('GET', '/1.1/trends/place.json', undefined, params);
+
+    const data = response[0];
+    return {
+      trends: data.trends,
+      location: data.locations[0].name,
+      woeid: data.locations[0].woeid,
+    };
+  }
+
+  // ============================================================================
+  // Cache Management
+  // ============================================================================
+
+  /**
+   * Get item from cache if still valid.
+   */
+  private getFromCache<T>(key: string): T | null {
+    const cached = this.cache.get(key);
+    if (!cached) return null;
+
+    const now = Date.now();
+    if (now - cached.timestamp > this.cacheTTL) {
+      this.cache.delete(key);
+      return null;
+    }
+
+    return cached.data as T;
+  }
+
+  /**
+   * Set item in cache.
+   */
+  private setCache(key: string, data: unknown): void {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+    });
+  }
+
+  /**
+   * Clear all cached data.
+   */
+  clearCache(): void {
+    this.cache.clear();
   }
 }
 

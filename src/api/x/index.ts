@@ -19,4 +19,11 @@ export {
   type Tweet,
   type ThreadResult,
   type DeleteResult,
+  type TweetData,
+  type TimelineResponse,
+  type TimelineOptions,
+  type GetTweetOptions,
+  type SearchOptions,
+  type TrendingTopic,
+  type TrendingResponse,
 } from './client.js';
