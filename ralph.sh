@@ -5,10 +5,10 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-for ((i=0; i<$1; i++)); do
+for ((i=1; i<=$1; i++)); do
     echo "Iteration $i"
     echo "----------------------------------"
-    result=(claude --permissions-mode acceptEdits -p "@plan.json @progress.md \
+    result=$(claude --permission-mode bypassPermissions -p "@plan.json @progress.md \
     1. find the highest priority feature that is not yet passing. this should be the one YOU decide has highest priority and not necessarily the first one. \
     2. before everything and after deciding the highest priority feature to implement, WRITE tests for the feature, follow TDD. \
     3. check the types and linting errors using biome and make sure they all pass. \
@@ -20,9 +20,9 @@ for ((i=0; i<$1; i++)); do
     9. if while working , you notice the plan.json is complete. output <promise>COMPLETE</promise>. \
     ")
 
-    echo $result
+    echo "$result"
 
-    if [[ $result == *"<promise>COMPLETE</promise>"* ]]; then
+    if [[ "$result" == *"<promise>COMPLETE</promise>"* ]]; then
         echo "Plan.json is complete. Exiting."
         exit 0
     fi
