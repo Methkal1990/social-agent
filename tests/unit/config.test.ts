@@ -599,3 +599,227 @@ describe('Config Types', () => {
     expect(config.persona).toBeDefined();
   });
 });
+
+describe('MainConfig autonomy configuration', () => {
+  let testConfigDir: string;
+
+  beforeEach(() => {
+    resetConfig();
+    testConfigDir = path.join(
+      os.tmpdir(),
+      `config-autonomy-test-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    );
+    fs.mkdirSync(testConfigDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    resetConfig();
+    if (fs.existsSync(testConfigDir)) {
+      fs.rmSync(testConfigDir, { recursive: true, force: true });
+    }
+  });
+
+  describe('autonomy.tasks', () => {
+    it('should load autonomy task settings from main.yaml', () => {
+      const mainConfig = {
+        version: 1,
+        autonomy: {
+          tasks: {
+            new_posts: { level: 'approval_required', confidence_threshold: 80 },
+            thread_posts: { level: 'approval_required', confidence_threshold: 85 },
+            replies: { level: 'auto' },
+            quote_tweets: { level: 'confidence_based', confidence_threshold: 75 },
+            engagement: { level: 'auto' },
+            network_building: { level: 'confidence_based', confidence_threshold: 70 },
+          },
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'main.yaml'), yaml.stringify(mainConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadMainConfig();
+
+      expect(loaded.autonomy?.tasks.new_posts.level).toBe('approval_required');
+      expect(loaded.autonomy?.tasks.new_posts.confidence_threshold).toBe(80);
+      expect(loaded.autonomy?.tasks.replies.level).toBe('auto');
+      expect(loaded.autonomy?.tasks.quote_tweets.confidence_threshold).toBe(75);
+    });
+
+    it('should validate autonomy level enum values', () => {
+      const invalidConfig = {
+        version: 1,
+        autonomy: {
+          tasks: {
+            new_posts: { level: 'invalid_level' },
+          },
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'main.yaml'), yaml.stringify(invalidConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      expect(() => loader.loadMainConfig()).toThrow();
+    });
+
+    it('should validate confidence_threshold is between 0 and 100', () => {
+      const invalidConfig = {
+        version: 1,
+        autonomy: {
+          tasks: {
+            new_posts: { level: 'confidence_based', confidence_threshold: 150 },
+          },
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'main.yaml'), yaml.stringify(invalidConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      expect(() => loader.loadMainConfig()).toThrow();
+    });
+
+    it('should provide defaults for autonomy tasks', () => {
+      const loader = new ConfigLoader(testConfigDir);
+      const config = loader.loadMainConfig();
+
+      expect(config.autonomy?.tasks.new_posts.level).toBe('approval_required');
+      expect(config.autonomy?.tasks.replies.level).toBe('auto');
+    });
+  });
+
+  describe('autonomy.confidence', () => {
+    it('should load confidence scoring weights from main.yaml', () => {
+      const mainConfig = {
+        version: 1,
+        autonomy: {
+          confidence: {
+            weights: {
+              voice_alignment: 0.3,
+              topic_relevance: 0.2,
+              predicted_engagement: 0.2,
+              safety_score: 0.2,
+              similarity_to_past: 0.1,
+            },
+          },
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'main.yaml'), yaml.stringify(mainConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadMainConfig();
+
+      expect(loaded.autonomy?.confidence.weights.voice_alignment).toBe(0.3);
+      expect(loaded.autonomy?.confidence.weights.topic_relevance).toBe(0.2);
+      expect(loaded.autonomy?.confidence.weights.safety_score).toBe(0.2);
+    });
+
+    it('should validate weights are between 0 and 1', () => {
+      const invalidConfig = {
+        version: 1,
+        autonomy: {
+          confidence: {
+            weights: {
+              voice_alignment: 1.5, // Invalid: > 1
+            },
+          },
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'main.yaml'), yaml.stringify(invalidConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      expect(() => loader.loadMainConfig()).toThrow();
+    });
+
+    it('should provide default weights', () => {
+      const loader = new ConfigLoader(testConfigDir);
+      const config = loader.loadMainConfig();
+
+      expect(config.autonomy?.confidence.weights.voice_alignment).toBe(0.3);
+      expect(config.autonomy?.confidence.weights.topic_relevance).toBe(0.2);
+    });
+  });
+
+  describe('full autonomy config', () => {
+    it('should load complete autonomy configuration', () => {
+      const mainConfig = {
+        version: 1,
+        account: { username: '@testuser' },
+        api_tier: {
+          name: 'basic',
+          limits: { posts_per_month: 1500, reads_per_month: 10000, requests_per_15min: 50 },
+        },
+        settings: { timezone: 'UTC', log_level: 'info' },
+        features: {
+          engagement_automation: true,
+          trend_monitoring: true,
+          network_building: true,
+          image_generation: false,
+          ab_testing: false,
+        },
+        autonomy: {
+          tasks: {
+            new_posts: { level: 'confidence_based', confidence_threshold: 80 },
+            thread_posts: { level: 'approval_required', confidence_threshold: 85 },
+            replies: { level: 'auto' },
+            quote_tweets: { level: 'confidence_based', confidence_threshold: 75 },
+            engagement: { level: 'auto' },
+            network_building: { level: 'confidence_based', confidence_threshold: 70 },
+          },
+          confidence: {
+            weights: {
+              voice_alignment: 0.25,
+              topic_relevance: 0.25,
+              predicted_engagement: 0.2,
+              safety_score: 0.2,
+              similarity_to_past: 0.1,
+            },
+          },
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'main.yaml'), yaml.stringify(mainConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadMainConfig();
+
+      expect(loaded.autonomy).toBeDefined();
+      expect(loaded.autonomy?.tasks).toBeDefined();
+      expect(loaded.autonomy?.confidence).toBeDefined();
+    });
+
+    it('should export MainConfig type with autonomy field', () => {
+      const config: MainConfig = {
+        version: 1,
+        account: { username: '@test' },
+        api_tier: {
+          name: 'basic',
+          limits: { posts_per_month: 1500, reads_per_month: 10000, requests_per_15min: 50 },
+        },
+        settings: { timezone: 'UTC', log_level: 'info' },
+        features: {
+          engagement_automation: true,
+          trend_monitoring: true,
+          network_building: true,
+          image_generation: false,
+          ab_testing: false,
+        },
+        autonomy: {
+          tasks: {
+            new_posts: { level: 'approval_required', confidence_threshold: 80 },
+            thread_posts: { level: 'approval_required', confidence_threshold: 85 },
+            replies: { level: 'auto' },
+            quote_tweets: { level: 'confidence_based', confidence_threshold: 75 },
+            engagement: { level: 'auto' },
+            network_building: { level: 'confidence_based', confidence_threshold: 70 },
+          },
+          confidence: {
+            weights: {
+              voice_alignment: 0.3,
+              topic_relevance: 0.2,
+              predicted_engagement: 0.2,
+              safety_score: 0.2,
+              similarity_to_past: 0.1,
+            },
+          },
+        },
+      };
+      expect(config.autonomy?.tasks.new_posts.level).toBe('approval_required');
+    });
+  });
+});

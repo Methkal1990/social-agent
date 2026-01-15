@@ -30,6 +30,64 @@ const ApiTierSchema = z.object({
   }),
 });
 
+// Autonomy level schema
+const AutonomyLevelSchema = z.enum(['auto', 'confidence_based', 'approval_required']);
+
+// Autonomy task settings schema
+const AutonomyTaskSettingsSchema = z.object({
+  level: AutonomyLevelSchema.default('approval_required'),
+  confidence_threshold: z.number().min(0).max(100).optional(),
+});
+
+// Confidence weights schema
+const ConfidenceWeightsSchema = z.object({
+  voice_alignment: z.number().min(0).max(1).default(0.3),
+  topic_relevance: z.number().min(0).max(1).default(0.2),
+  predicted_engagement: z.number().min(0).max(1).default(0.2),
+  safety_score: z.number().min(0).max(1).default(0.2),
+  similarity_to_past: z.number().min(0).max(1).default(0.1),
+});
+
+// Autonomy config schema
+const AutonomyConfigSchema = z.object({
+  tasks: z
+    .object({
+      new_posts: AutonomyTaskSettingsSchema.default({ level: 'approval_required', confidence_threshold: 80 }),
+      thread_posts: AutonomyTaskSettingsSchema.default({ level: 'approval_required', confidence_threshold: 85 }),
+      replies: AutonomyTaskSettingsSchema.default({ level: 'auto' }),
+      quote_tweets: AutonomyTaskSettingsSchema.default({ level: 'confidence_based', confidence_threshold: 75 }),
+      engagement: AutonomyTaskSettingsSchema.default({ level: 'auto' }),
+      network_building: AutonomyTaskSettingsSchema.default({ level: 'confidence_based', confidence_threshold: 70 }),
+    })
+    .default({
+      new_posts: { level: 'approval_required', confidence_threshold: 80 },
+      thread_posts: { level: 'approval_required', confidence_threshold: 85 },
+      replies: { level: 'auto' },
+      quote_tweets: { level: 'confidence_based', confidence_threshold: 75 },
+      engagement: { level: 'auto' },
+      network_building: { level: 'confidence_based', confidence_threshold: 70 },
+    }),
+  confidence: z
+    .object({
+      weights: ConfidenceWeightsSchema.default({
+        voice_alignment: 0.3,
+        topic_relevance: 0.2,
+        predicted_engagement: 0.2,
+        safety_score: 0.2,
+        similarity_to_past: 0.1,
+      }),
+    })
+    .default({
+      weights: {
+        voice_alignment: 0.3,
+        topic_relevance: 0.2,
+        predicted_engagement: 0.2,
+        safety_score: 0.2,
+        similarity_to_past: 0.1,
+      },
+    }),
+});
+
 // Main config schema
 const MainConfigSchema = z.object({
   version: z.number().default(1),
@@ -67,6 +125,25 @@ const MainConfigSchema = z.object({
       image_generation: false,
       ab_testing: false,
     }),
+  autonomy: AutonomyConfigSchema.default({
+    tasks: {
+      new_posts: { level: 'approval_required', confidence_threshold: 80 },
+      thread_posts: { level: 'approval_required', confidence_threshold: 85 },
+      replies: { level: 'auto' },
+      quote_tweets: { level: 'confidence_based', confidence_threshold: 75 },
+      engagement: { level: 'auto' },
+      network_building: { level: 'confidence_based', confidence_threshold: 70 },
+    },
+    confidence: {
+      weights: {
+        voice_alignment: 0.3,
+        topic_relevance: 0.2,
+        predicted_engagement: 0.2,
+        safety_score: 0.2,
+        similarity_to_past: 0.1,
+      },
+    },
+  }),
 });
 
 // Persona config schema

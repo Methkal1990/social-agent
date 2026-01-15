@@ -73,3 +73,12 @@
 - Implemented moveDraftToQueue() to transfer draft to queue with options
 - Created getDraftsStorage() singleton, resetDraftsStorage()
 - Added unit tests (36 tests passing, 213 total)
+
+### config-002: Main configuration file (main.yaml) ✅
+- Added AutonomyLevelSchema enum (auto, confidence_based, approval_required)
+- Added AutonomyTaskSettingsSchema with level and confidence_threshold
+- Added ConfidenceWeightsSchema with voice_alignment, topic_relevance, etc.
+- Added AutonomyConfigSchema with tasks and confidence sections
+- Extended MainConfigSchema with autonomy configuration
+- Added defaults for all autonomy settings per spec
+- Added unit tests for autonomy config (9 new tests, 222 total)

@@ -79,7 +79,7 @@
         "Implement autonomy levels configuration",
         "Add validation for all settings"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "config-003",
