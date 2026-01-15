@@ -237,7 +237,10 @@ export async function withRetry<T>(
       }
 
       // Calculate delay with exponential backoff, capped at maxDelay
-      const delay = Math.min(config.initialDelay * Math.pow(config.factor, attempt - 1), config.maxDelay);
+      const delay = Math.min(
+        config.initialDelay * Math.pow(config.factor, attempt - 1),
+        config.maxDelay
+      );
 
       // Call retry callback if provided
       if (config.onRetry) {

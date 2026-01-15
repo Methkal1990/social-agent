@@ -156,10 +156,7 @@ export class Storage {
       }
 
       // Other error
-      throw new StorageError(
-        error instanceof Error ? error.message : 'Read failed',
-        filePath
-      );
+      throw new StorageError(error instanceof Error ? error.message : 'Read failed', filePath);
     }
   }
 
@@ -201,10 +198,7 @@ export class Storage {
     } catch (error) {
       // Ignore if file doesn't exist
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-        throw new StorageError(
-          error instanceof Error ? error.message : 'Delete failed',
-          filePath
-        );
+        throw new StorageError(error instanceof Error ? error.message : 'Delete failed', filePath);
       }
     }
   }

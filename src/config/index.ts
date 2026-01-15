@@ -129,9 +129,7 @@ const ScheduleConfigSchema = z.object({
       end: z.string().default('21:00'),
     })
     .default({ start: '08:00', end: '21:00' }),
-  blackouts: z
-    .array(z.object({ start: z.string(), end: z.string() }))
-    .default([]),
+  blackouts: z.array(z.object({ start: z.string(), end: z.string() })).default([]),
   inactivity: z
     .object({
       action: InactivityActionSchema.default('reduce'),
@@ -294,8 +292,7 @@ export class ConfigLoader {
   private lastModified: Map<ConfigFileName, number> = new Map();
 
   constructor(configDir?: string) {
-    this.configDir =
-      configDir ?? path.join(os.homedir(), '.social-agent', 'config');
+    this.configDir = configDir ?? path.join(os.homedir(), '.social-agent', 'config');
   }
 
   /**

@@ -19,7 +19,10 @@ describe('Logger', () => {
     consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     resetLoggers();
     // Create a unique test directory for each test
-    testLogsDir = path.join(os.tmpdir(), `logger-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testLogsDir = path.join(
+      os.tmpdir(),
+      `logger-test-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    );
   });
 
   afterEach(() => {
@@ -144,13 +147,18 @@ describe('Logger', () => {
 
   describe('file logging', () => {
     it('should write to log file when enabled', () => {
-      const logger = new Logger({ level: 'info', enableFile: true, enableConsole: false, logsDir: testLogsDir });
+      const logger = new Logger({
+        level: 'info',
+        enableFile: true,
+        enableConsole: false,
+        logsDir: testLogsDir,
+      });
       logger.info('test message');
       logger.close();
 
       // Check that log file was created
       const files = fs.readdirSync(testLogsDir);
-      const logFile = files.find(f => f.startsWith('social-agent-'));
+      const logFile = files.find((f) => f.startsWith('social-agent-'));
       expect(logFile).toBeDefined();
 
       // Check content
@@ -160,12 +168,17 @@ describe('Logger', () => {
     });
 
     it('should include timestamp in file output', () => {
-      const logger = new Logger({ level: 'info', enableFile: true, enableConsole: false, logsDir: testLogsDir });
+      const logger = new Logger({
+        level: 'info',
+        enableFile: true,
+        enableConsole: false,
+        logsDir: testLogsDir,
+      });
       logger.info('timestamp test');
       logger.close();
 
       const files = fs.readdirSync(testLogsDir);
-      const logFile = files.find(f => f.startsWith('social-agent-'));
+      const logFile = files.find((f) => f.startsWith('social-agent-'));
       const content = fs.readFileSync(path.join(testLogsDir, logFile!), 'utf-8');
 
       // Check for ISO timestamp format
@@ -191,7 +204,10 @@ describe('AIReasoningLogger', () => {
 
   beforeEach(() => {
     resetLoggers();
-    testLogsDir = path.join(os.tmpdir(), `ai-reasoning-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testLogsDir = path.join(
+      os.tmpdir(),
+      `ai-reasoning-test-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    );
   });
 
   afterEach(() => {
@@ -215,7 +231,7 @@ describe('AIReasoningLogger', () => {
       logger.close();
 
       const files = fs.readdirSync(testLogsDir);
-      const logFile = files.find(f => f.startsWith('ai-reasoning-'));
+      const logFile = files.find((f) => f.startsWith('ai-reasoning-'));
       expect(logFile).toBeDefined();
 
       const content = fs.readFileSync(path.join(testLogsDir, logFile!), 'utf-8');
@@ -240,7 +256,7 @@ describe('AIReasoningLogger', () => {
       logger.close();
 
       const files = fs.readdirSync(testLogsDir);
-      const logFile = files.find(f => f.startsWith('ai-reasoning-'));
+      const logFile = files.find((f) => f.startsWith('ai-reasoning-'));
       const content = fs.readFileSync(path.join(testLogsDir, logFile!), 'utf-8');
       const parsed = JSON.parse(content.trim());
 
@@ -260,7 +276,7 @@ describe('AIReasoningLogger', () => {
       logger.close();
 
       const files = fs.readdirSync(testLogsDir);
-      const logFile = files.find(f => f.startsWith('ai-reasoning-'));
+      const logFile = files.find((f) => f.startsWith('ai-reasoning-'));
       const content = fs.readFileSync(path.join(testLogsDir, logFile!), 'utf-8');
       const parsed = JSON.parse(content.trim());
 
@@ -280,7 +296,7 @@ describe('AIReasoningLogger', () => {
       logger.close();
 
       const files = fs.readdirSync(testLogsDir);
-      const logFile = files.find(f => f.startsWith('ai-reasoning-'));
+      const logFile = files.find((f) => f.startsWith('ai-reasoning-'));
       const content = fs.readFileSync(path.join(testLogsDir, logFile!), 'utf-8');
       const parsed = JSON.parse(content.trim());
 
@@ -299,7 +315,7 @@ describe('AIReasoningLogger', () => {
       logger.close();
 
       const files = fs.readdirSync(testLogsDir);
-      const logFile = files.find(f => f.startsWith('ai-reasoning-'));
+      const logFile = files.find((f) => f.startsWith('ai-reasoning-'));
       const content = fs.readFileSync(path.join(testLogsDir, logFile!), 'utf-8');
       const parsed = JSON.parse(content.trim());
 
@@ -349,7 +365,10 @@ describe('Singleton functions', () => {
 
   beforeEach(() => {
     resetLoggers();
-    testLogsDir = path.join(os.tmpdir(), `singleton-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testLogsDir = path.join(
+      os.tmpdir(),
+      `singleton-test-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    );
   });
 
   afterEach(() => {

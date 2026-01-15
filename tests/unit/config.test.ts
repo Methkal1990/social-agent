@@ -159,7 +159,10 @@ describe('ConfigLoader', () => {
         ai_safety: { enabled: true, check_for: ['offensive'] },
         brand_safety: { enabled: true, check_for: ['consistency'] },
       };
-      fs.writeFileSync(path.join(testConfigDir, 'moderation.yaml'), yaml.stringify(moderationConfig));
+      fs.writeFileSync(
+        path.join(testConfigDir, 'moderation.yaml'),
+        yaml.stringify(moderationConfig)
+      );
 
       const loader = new ConfigLoader(testConfigDir);
       const loaded = loader.loadModerationConfig();
@@ -183,8 +186,16 @@ describe('ConfigLoader', () => {
         version: 1,
         openrouter: { base_url: 'https://openrouter.ai/api/v1' },
         models: {
-          content_generation: { model: 'anthropic/claude-3.5-sonnet', temperature: 0.7, max_tokens: 1000 },
-          engagement_replies: { model: 'anthropic/claude-3-haiku', temperature: 0.6, max_tokens: 500 },
+          content_generation: {
+            model: 'anthropic/claude-3.5-sonnet',
+            temperature: 0.7,
+            max_tokens: 1000,
+          },
+          engagement_replies: {
+            model: 'anthropic/claude-3-haiku',
+            temperature: 0.6,
+            max_tokens: 500,
+          },
           analysis: { model: 'anthropic/claude-3-haiku', temperature: 0.3, max_tokens: 2000 },
           moderation: { model: 'anthropic/claude-3-haiku', temperature: 0.1, max_tokens: 500 },
         },

@@ -50,3 +50,14 @@
 - Added file locking via acquireLock() with timeout support
 - Created getStorage() singleton, resetStorage(), getDataDir(), ensureDataDir()
 - Added unit tests (35 tests passing, 145 total)
+
+### storage-002: Queue data storage (queue.json) ✅
+- Defined Zod schemas: queueItemSchema, queueDataSchema with status/type/source enums
+- Created QueueStorage class with caching and persistence to queue.json
+- Implemented addToQueue() with auto UUID and timestamp generation
+- Implemented removeFromQueue() with ID-based removal
+- Implemented updateQueueItem() for partial updates
+- Implemented getQueueByStatus() for filtered queries
+- Implemented getQueueItem() for single item lookup
+- Created getQueueStorage() singleton, resetQueueStorage()
+- Added unit tests (32 tests passing, 177 total)

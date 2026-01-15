@@ -287,7 +287,13 @@ describe('withRetry', () => {
       .mockResolvedValueOnce('success');
 
     const onRetry = vi.fn();
-    const config: RetryConfig = { maxAttempts: 3, initialDelay: 1, maxDelay: 10, factor: 2, onRetry };
+    const config: RetryConfig = {
+      maxAttempts: 3,
+      initialDelay: 1,
+      maxDelay: 10,
+      factor: 2,
+      onRetry,
+    };
 
     await withRetry(operation, config);
 
@@ -380,7 +386,9 @@ describe('collectErrorContext', () => {
   });
 
   it('should handle error details for XAPIError', () => {
-    const error = new XAPIError('Rate limit', 429, '/2/tweets', { errors: [{ message: 'Too many requests' }] });
+    const error = new XAPIError('Rate limit', 429, '/2/tweets', {
+      errors: [{ message: 'Too many requests' }],
+    });
     const context = collectErrorContext(error, 'post');
 
     expect(context.errorDetails).toBeDefined();
