@@ -194,3 +194,15 @@
 - Updated src/cli.ts to use new CLI module
 - Updated tsup.config.ts with banner for shebang
 - Added unit tests (26 new tests, 501 total)
+
+### api-001: X API client foundation ✅
+- Created XClient class with axios instance in src/api/x/client.ts
+- Implemented OAuth 1.0a authentication with HMAC-SHA1 signature
+- Created createConfigFromEnv() for loading credentials from environment
+- Implemented rate limit tracking from X-Rate-Limit-* response headers
+- Added request/response logging callbacks (onRequest, onResponse)
+- Implemented sandbox mode support with separate credentials
+- Added API tier limit awareness with usage stats tracking
+- Created getXClient() singleton, resetXClient()
+- Exported types: XClientConfig, RateLimitInfo, UsageStats, ApiTierLimits
+- Added unit tests (31 new tests, 532 total)

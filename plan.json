@@ -417,7 +417,7 @@
         "Add sandbox mode support with separate credentials",
         "Implement API tier limit awareness"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "api-002",
