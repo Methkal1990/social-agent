@@ -92,3 +92,13 @@
 - Example posts: array of sample tweets for style learning
 - A/B testing: enabled flag, test_elements array
 - Added comprehensive unit tests (9 new tests, 231 total)
+
+### config-004: Schedule configuration file (schedule.yaml) ✅
+- ScheduleConfigSchema defined with Zod (lines 187-223)
+- Frequency settings: type (fixed/variable), min/max posts per day
+- Day-specific overrides via daily_override record
+- Active hours: start/end time strings
+- Blackout periods: array of start/end time objects
+- Inactivity behavior: action enum, threshold_days, reduction_percent
+- Queue management: max_size, min_buffer settings
+- Added comprehensive unit tests (16 new tests, 247 total)

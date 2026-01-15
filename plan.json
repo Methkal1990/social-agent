@@ -109,7 +109,7 @@
         "Implement inactivity behavior settings",
         "Implement queue management settings"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "config-005",

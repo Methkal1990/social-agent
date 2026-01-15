@@ -319,6 +319,280 @@ describe('ConfigLoader', () => {
       expect(config.version).toBe(1);
       expect(config.frequency.type).toBe('variable');
     });
+
+    it('should load frequency settings with min/max posts per day', () => {
+      const scheduleConfig = {
+        frequency: {
+          type: 'variable',
+          min_posts_per_day: 3,
+          max_posts_per_day: 8,
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'schedule.yaml'), yaml.stringify(scheduleConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadScheduleConfig();
+
+      expect(loaded.frequency.type).toBe('variable');
+      expect(loaded.frequency.min_posts_per_day).toBe(3);
+      expect(loaded.frequency.max_posts_per_day).toBe(8);
+    });
+
+    it('should load fixed frequency type', () => {
+      const scheduleConfig = {
+        frequency: {
+          type: 'fixed',
+          min_posts_per_day: 4,
+          max_posts_per_day: 4,
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'schedule.yaml'), yaml.stringify(scheduleConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadScheduleConfig();
+
+      expect(loaded.frequency.type).toBe('fixed');
+    });
+
+    it('should load day-specific overrides', () => {
+      const scheduleConfig = {
+        frequency: {
+          type: 'variable',
+          min_posts_per_day: 2,
+          max_posts_per_day: 6,
+          daily_override: {
+            monday: { min: 3, max: 5 },
+            friday: { min: 2, max: 3 },
+            saturday: { min: 1, max: 2 },
+            sunday: { min: 1, max: 2 },
+          },
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'schedule.yaml'), yaml.stringify(scheduleConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadScheduleConfig();
+
+      expect(loaded.frequency.daily_override).toBeDefined();
+      expect(loaded.frequency.daily_override?.monday).toEqual({ min: 3, max: 5 });
+      expect(loaded.frequency.daily_override?.saturday).toEqual({ min: 1, max: 2 });
+    });
+
+    it('should load active hours configuration', () => {
+      const scheduleConfig = {
+        active_hours: {
+          start: '07:30',
+          end: '22:00',
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'schedule.yaml'), yaml.stringify(scheduleConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadScheduleConfig();
+
+      expect(loaded.active_hours.start).toBe('07:30');
+      expect(loaded.active_hours.end).toBe('22:00');
+    });
+
+    it('should load blackout periods', () => {
+      const scheduleConfig = {
+        blackouts: [
+          { start: '23:00', end: '06:00' },
+          { start: '12:00', end: '13:00' },
+        ],
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'schedule.yaml'), yaml.stringify(scheduleConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadScheduleConfig();
+
+      expect(loaded.blackouts).toHaveLength(2);
+      expect(loaded.blackouts[0]).toEqual({ start: '23:00', end: '06:00' });
+      expect(loaded.blackouts[1]).toEqual({ start: '12:00', end: '13:00' });
+    });
+
+    it('should load empty blackouts array by default', () => {
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadScheduleConfig();
+
+      expect(loaded.blackouts).toEqual([]);
+    });
+
+    it('should load inactivity behavior settings with all actions', () => {
+      const actions = ['keep_posting', 'pause', 'reduce', 'alert_wait'] as const;
+
+      for (const action of actions) {
+        const scheduleConfig = {
+          inactivity: {
+            action,
+            threshold_days: 5,
+          },
+        };
+        fs.writeFileSync(path.join(testConfigDir, 'schedule.yaml'), yaml.stringify(scheduleConfig));
+
+        const loader = new ConfigLoader(testConfigDir);
+        resetConfig();
+        const loaded = loader.loadScheduleConfig();
+
+        expect(loaded.inactivity.action).toBe(action);
+        expect(loaded.inactivity.threshold_days).toBe(5);
+      }
+    });
+
+    it('should load inactivity reduction_percent for reduce action', () => {
+      const scheduleConfig = {
+        inactivity: {
+          action: 'reduce',
+          threshold_days: 3,
+          reduction_percent: 50,
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'schedule.yaml'), yaml.stringify(scheduleConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadScheduleConfig();
+
+      expect(loaded.inactivity.action).toBe('reduce');
+      expect(loaded.inactivity.reduction_percent).toBe(50);
+    });
+
+    it('should load queue management settings', () => {
+      const scheduleConfig = {
+        queue: {
+          max_size: 100,
+          min_buffer: 10,
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'schedule.yaml'), yaml.stringify(scheduleConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadScheduleConfig();
+
+      expect(loaded.queue.max_size).toBe(100);
+      expect(loaded.queue.min_buffer).toBe(10);
+    });
+
+    it('should throw ConfigError for invalid frequency type', () => {
+      const invalidConfig = {
+        frequency: {
+          type: 'invalid_type',
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'schedule.yaml'), yaml.stringify(invalidConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      expect(() => loader.loadScheduleConfig()).toThrow();
+    });
+
+    it('should throw ConfigError for invalid inactivity action', () => {
+      const invalidConfig = {
+        inactivity: {
+          action: 'invalid_action',
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'schedule.yaml'), yaml.stringify(invalidConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      expect(() => loader.loadScheduleConfig()).toThrow();
+    });
+
+    it('should throw ConfigError for negative min_posts_per_day', () => {
+      const invalidConfig = {
+        frequency: {
+          min_posts_per_day: -1,
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'schedule.yaml'), yaml.stringify(invalidConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      expect(() => loader.loadScheduleConfig()).toThrow();
+    });
+
+    it('should throw ConfigError for invalid threshold_days', () => {
+      const invalidConfig = {
+        inactivity: {
+          threshold_days: 0,
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'schedule.yaml'), yaml.stringify(invalidConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      expect(() => loader.loadScheduleConfig()).toThrow();
+    });
+
+    it('should throw ConfigError for reduction_percent out of range', () => {
+      const invalidConfig = {
+        inactivity: {
+          action: 'reduce',
+          threshold_days: 3,
+          reduction_percent: 150,
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'schedule.yaml'), yaml.stringify(invalidConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      expect(() => loader.loadScheduleConfig()).toThrow();
+    });
+
+    it('should provide default values for all schedule settings', () => {
+      const loader = new ConfigLoader(testConfigDir);
+      const config = loader.loadScheduleConfig();
+
+      expect(config.version).toBe(1);
+      expect(config.frequency.type).toBe('variable');
+      expect(config.frequency.min_posts_per_day).toBe(2);
+      expect(config.frequency.max_posts_per_day).toBe(6);
+      expect(config.active_hours.start).toBe('08:00');
+      expect(config.active_hours.end).toBe('21:00');
+      expect(config.blackouts).toEqual([]);
+      expect(config.inactivity.action).toBe('reduce');
+      expect(config.inactivity.threshold_days).toBe(3);
+      expect(config.queue.max_size).toBe(50);
+      expect(config.queue.min_buffer).toBe(5);
+    });
+
+    it('should load complete schedule config matching spec example', () => {
+      const fullScheduleConfig = {
+        version: 1,
+        frequency: {
+          type: 'variable',
+          min_posts_per_day: 2,
+          max_posts_per_day: 6,
+          daily_override: {
+            monday: { min: 3, max: 5 },
+            friday: { min: 2, max: 3 },
+            saturday: { min: 1, max: 2 },
+            sunday: { min: 1, max: 2 },
+          },
+        },
+        active_hours: {
+          start: '08:00',
+          end: '21:00',
+        },
+        blackouts: [{ start: '23:00', end: '06:00' }],
+        inactivity: {
+          action: 'reduce',
+          threshold_days: 3,
+          reduction_percent: 50,
+        },
+        queue: {
+          max_size: 50,
+          min_buffer: 5,
+        },
+      };
+      fs.writeFileSync(path.join(testConfigDir, 'schedule.yaml'), yaml.stringify(fullScheduleConfig));
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadScheduleConfig();
+
+      expect(loaded.version).toBe(1);
+      expect(loaded.frequency.type).toBe('variable');
+      expect(loaded.frequency.daily_override?.monday).toEqual({ min: 3, max: 5 });
+      expect(loaded.active_hours.start).toBe('08:00');
+      expect(loaded.blackouts).toHaveLength(1);
+      expect(loaded.inactivity.action).toBe('reduce');
+      expect(loaded.queue.max_size).toBe(50);
+    });
   });
 
   describe('loadModerationConfig', () => {
