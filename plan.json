@@ -258,7 +258,7 @@
         "Implement updateEngagementTarget function",
         "Implement addCommunity function"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "storage-008",
