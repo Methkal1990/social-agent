@@ -64,7 +64,7 @@
         "Implement config hot-reload detection",
         "Create getConfig() singleton for accessing configuration"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "config-002",

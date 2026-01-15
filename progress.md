@@ -30,3 +30,13 @@
 - Added collectErrorContext for debugging with environment info
 - Exported all utilities from @/utils/errors.js
 - Added unit tests (53 tests passing, 79 total)
+
+### config-001: Configuration loading and validation system ✅
+- Created ConfigLoader class with YAML loading via yaml package
+- Defined Zod schemas for all config files (main, persona, schedule, moderation, models)
+- Implemented validation with helpful ConfigError messages
+- Added full defaults for all optional settings (Zod 4 compatible)
+- Implemented config hot-reload detection via mtime tracking
+- Created getConfig() singleton, resetConfig(), ensureConfigDir() utilities
+- Exported all config types (MainConfig, PersonaConfig, etc.)
+- Added unit tests (31 tests passing, 110 total)
