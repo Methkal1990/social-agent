@@ -623,6 +623,289 @@ describe('ConfigLoader', () => {
       expect(config.version).toBe(1);
       expect(config.blocklist.words).toEqual([]);
     });
+
+    it('should load keyword blocklist with words', () => {
+      const moderationConfig = {
+        blocklist: {
+          words: ['offensive_word1', 'controversial_term', 'spam'],
+        },
+      };
+      fs.writeFileSync(
+        path.join(testConfigDir, 'moderation.yaml'),
+        yaml.stringify(moderationConfig)
+      );
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModerationConfig();
+
+      expect(loaded.blocklist.words).toHaveLength(3);
+      expect(loaded.blocklist.words).toContain('offensive_word1');
+      expect(loaded.blocklist.words).toContain('controversial_term');
+      expect(loaded.blocklist.words).toContain('spam');
+    });
+
+    it('should load keyword blocklist with phrases', () => {
+      const moderationConfig = {
+        blocklist: {
+          phrases: ['problematic phrase', 'inappropriate content', 'do not say this'],
+        },
+      };
+      fs.writeFileSync(
+        path.join(testConfigDir, 'moderation.yaml'),
+        yaml.stringify(moderationConfig)
+      );
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModerationConfig();
+
+      expect(loaded.blocklist.phrases).toHaveLength(3);
+      expect(loaded.blocklist.phrases).toContain('problematic phrase');
+    });
+
+    it('should load topic rules with engage topics', () => {
+      const moderationConfig = {
+        topics: {
+          engage: ['AI ethics', 'tech industry trends', 'productivity tips', 'software engineering'],
+        },
+      };
+      fs.writeFileSync(
+        path.join(testConfigDir, 'moderation.yaml'),
+        yaml.stringify(moderationConfig)
+      );
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModerationConfig();
+
+      expect(loaded.topics.engage).toHaveLength(4);
+      expect(loaded.topics.engage).toContain('AI ethics');
+      expect(loaded.topics.engage).toContain('tech industry trends');
+    });
+
+    it('should load topic rules with avoid topics', () => {
+      const moderationConfig = {
+        topics: {
+          avoid: ['politics', 'religion', 'divisive social issues'],
+        },
+      };
+      fs.writeFileSync(
+        path.join(testConfigDir, 'moderation.yaml'),
+        yaml.stringify(moderationConfig)
+      );
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModerationConfig();
+
+      expect(loaded.topics.avoid).toHaveLength(3);
+      expect(loaded.topics.avoid).toContain('politics');
+      expect(loaded.topics.avoid).toContain('religion');
+    });
+
+    it('should load topic rules with alert_only topics', () => {
+      const moderationConfig = {
+        topics: {
+          alert_only: ['breaking news', 'crisis events', 'industry drama'],
+        },
+      };
+      fs.writeFileSync(
+        path.join(testConfigDir, 'moderation.yaml'),
+        yaml.stringify(moderationConfig)
+      );
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModerationConfig();
+
+      expect(loaded.topics.alert_only).toHaveLength(3);
+      expect(loaded.topics.alert_only).toContain('breaking news');
+      expect(loaded.topics.alert_only).toContain('crisis events');
+    });
+
+    it('should load AI safety settings when enabled', () => {
+      const moderationConfig = {
+        ai_safety: {
+          enabled: true,
+          check_for: ['offensive content', 'misinformation risk', 'brand safety issues'],
+        },
+      };
+      fs.writeFileSync(
+        path.join(testConfigDir, 'moderation.yaml'),
+        yaml.stringify(moderationConfig)
+      );
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModerationConfig();
+
+      expect(loaded.ai_safety.enabled).toBe(true);
+      expect(loaded.ai_safety.check_for).toHaveLength(3);
+      expect(loaded.ai_safety.check_for).toContain('offensive content');
+      expect(loaded.ai_safety.check_for).toContain('misinformation risk');
+    });
+
+    it('should load AI safety settings when disabled', () => {
+      const moderationConfig = {
+        ai_safety: {
+          enabled: false,
+          check_for: [],
+        },
+      };
+      fs.writeFileSync(
+        path.join(testConfigDir, 'moderation.yaml'),
+        yaml.stringify(moderationConfig)
+      );
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModerationConfig();
+
+      expect(loaded.ai_safety.enabled).toBe(false);
+      expect(loaded.ai_safety.check_for).toEqual([]);
+    });
+
+    it('should load brand safety settings when enabled', () => {
+      const moderationConfig = {
+        brand_safety: {
+          enabled: true,
+          check_for: ['consistency with persona', 'professional tone', 'reputation risks'],
+        },
+      };
+      fs.writeFileSync(
+        path.join(testConfigDir, 'moderation.yaml'),
+        yaml.stringify(moderationConfig)
+      );
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModerationConfig();
+
+      expect(loaded.brand_safety.enabled).toBe(true);
+      expect(loaded.brand_safety.check_for).toHaveLength(3);
+      expect(loaded.brand_safety.check_for).toContain('consistency with persona');
+      expect(loaded.brand_safety.check_for).toContain('professional tone');
+    });
+
+    it('should load brand safety settings when disabled', () => {
+      const moderationConfig = {
+        brand_safety: {
+          enabled: false,
+          check_for: [],
+        },
+      };
+      fs.writeFileSync(
+        path.join(testConfigDir, 'moderation.yaml'),
+        yaml.stringify(moderationConfig)
+      );
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModerationConfig();
+
+      expect(loaded.brand_safety.enabled).toBe(false);
+    });
+
+    it('should provide empty defaults for all array fields', () => {
+      const loader = new ConfigLoader(testConfigDir);
+      const config = loader.loadModerationConfig();
+
+      expect(config.blocklist.words).toEqual([]);
+      expect(config.blocklist.phrases).toEqual([]);
+      expect(config.topics.engage).toEqual([]);
+      expect(config.topics.avoid).toEqual([]);
+      expect(config.topics.alert_only).toEqual([]);
+      expect(config.ai_safety.check_for).toEqual([]);
+      expect(config.brand_safety.check_for).toEqual([]);
+    });
+
+    it('should provide default true for ai_safety.enabled', () => {
+      const loader = new ConfigLoader(testConfigDir);
+      const config = loader.loadModerationConfig();
+
+      expect(config.ai_safety.enabled).toBe(true);
+    });
+
+    it('should provide default true for brand_safety.enabled', () => {
+      const loader = new ConfigLoader(testConfigDir);
+      const config = loader.loadModerationConfig();
+
+      expect(config.brand_safety.enabled).toBe(true);
+    });
+
+    it('should throw ConfigError for invalid version type', () => {
+      const invalidConfig = { version: 'not a number' };
+      fs.writeFileSync(
+        path.join(testConfigDir, 'moderation.yaml'),
+        yaml.stringify(invalidConfig)
+      );
+
+      const loader = new ConfigLoader(testConfigDir);
+      expect(() => loader.loadModerationConfig()).toThrow();
+    });
+
+    it('should throw ConfigError for invalid ai_safety.enabled type', () => {
+      const invalidConfig = {
+        ai_safety: {
+          enabled: 'yes', // Should be boolean
+        },
+      };
+      fs.writeFileSync(
+        path.join(testConfigDir, 'moderation.yaml'),
+        yaml.stringify(invalidConfig)
+      );
+
+      const loader = new ConfigLoader(testConfigDir);
+      expect(() => loader.loadModerationConfig()).toThrow();
+    });
+
+    it('should throw ConfigError for invalid blocklist.words type', () => {
+      const invalidConfig = {
+        blocklist: {
+          words: 'not an array',
+        },
+      };
+      fs.writeFileSync(
+        path.join(testConfigDir, 'moderation.yaml'),
+        yaml.stringify(invalidConfig)
+      );
+
+      const loader = new ConfigLoader(testConfigDir);
+      expect(() => loader.loadModerationConfig()).toThrow();
+    });
+
+    it('should load complete moderation config matching spec example', () => {
+      const fullModerationConfig = {
+        version: 1,
+        blocklist: {
+          words: ['offensive_word1', 'controversial_term'],
+          phrases: ['problematic phrase'],
+        },
+        topics: {
+          engage: ['AI ethics', 'tech industry trends', 'productivity tips'],
+          avoid: ['politics', 'religion', 'divisive social issues'],
+          alert_only: ['breaking news', 'crisis events', 'industry drama'],
+        },
+        ai_safety: {
+          enabled: true,
+          check_for: ['offensive content', 'misinformation risk', 'brand safety issues'],
+        },
+        brand_safety: {
+          enabled: true,
+          check_for: ['consistency with persona', 'professional tone', 'reputation risks'],
+        },
+      };
+      fs.writeFileSync(
+        path.join(testConfigDir, 'moderation.yaml'),
+        yaml.stringify(fullModerationConfig)
+      );
+
+      const loader = new ConfigLoader(testConfigDir);
+      const loaded = loader.loadModerationConfig();
+
+      expect(loaded.version).toBe(1);
+      expect(loaded.blocklist.words).toHaveLength(2);
+      expect(loaded.blocklist.phrases).toHaveLength(1);
+      expect(loaded.topics.engage).toHaveLength(3);
+      expect(loaded.topics.avoid).toHaveLength(3);
+      expect(loaded.topics.alert_only).toHaveLength(3);
+      expect(loaded.ai_safety.enabled).toBe(true);
+      expect(loaded.ai_safety.check_for).toHaveLength(3);
+      expect(loaded.brand_safety.enabled).toBe(true);
+      expect(loaded.brand_safety.check_for).toHaveLength(3);
+    });
   });
 
   describe('loadModelsConfig', () => {

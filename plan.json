@@ -123,7 +123,7 @@
         "Implement brand safety settings",
         "Add validation for moderation rules"
       ],
-      "passes": false
+      "passes": true
     },
     {
       "id": "config-006",

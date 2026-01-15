@@ -102,3 +102,11 @@
 - Inactivity behavior: action enum, threshold_days, reduction_percent
 - Queue management: max_size, min_buffer settings
 - Added comprehensive unit tests (16 new tests, 247 total)
+
+### config-005: Moderation configuration file (moderation.yaml) ✅
+- ModerationConfigSchema defined with Zod (lines 225-253)
+- Keyword blocklist: words array, phrases array
+- Topic rules: engage, avoid, alert_only arrays
+- AI safety settings: enabled boolean, check_for array
+- Brand safety settings: enabled boolean, check_for array
+- Added comprehensive unit tests (16 new tests, 263 total)
